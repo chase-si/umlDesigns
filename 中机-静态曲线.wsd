@@ -1,0 +1,105 @@
+@startuml
+left to right direction
+
+package 页面操作 {
+    usecase pageInit as "
+      基本页面
+      --
+      初始化
+    "
+    usecase rightClickSetting as "
+      基本页面
+      --
+      右击设置曲线
+    "
+    usecase closeSetting as "
+      设置参数组件
+      --
+      确认/取消
+    "
+    usecase stepSetting as "
+      设置参数组件
+      --
+      上一步, 下一步
+    "
+	usecase beginTest as "
+      操作实验
+      --
+      开始
+    "
+	' usecase tenCross as "
+    '   右击
+    '   --
+    '   激活/取消十字
+    ' "
+	' usecase showLabels as "
+    '   右击
+    '   --
+    '   显示/隐藏标签
+    ' "
+	' usecase setBreak as "
+    '   右击
+    '   --
+    '   设置/接受断裂点
+    ' "
+}
+
+package restful接口 {
+    usecase "获取曲线设置数据" as getLineSettingApi
+    usecase "获取试样数据" as getSamplesApi
+    usecase "更新曲线设置数据" as postLineSettingApi
+    usecase "更新试样数据" as postSamplesApi
+
+}
+
+package zmq {
+	usecase "推数" as zqmPushData
+}
+
+package redux {
+    usecase "曲线设置flag" as settingFlagState
+    usecase "曲线设置Datas" as settingDatasState
+    usecase "曲线图表Datas" as chartDatasState
+}
+
+package chart组件 {
+    usecase "渲染设置参数" as chartOptRender
+    usecase "渲染图表参数" as chartDataRender
+}
+
+package 设置参数组件 {
+    usecase "渲染数据" as settingInit
+    usecase "确认/取消" as settingModal
+}
+
+package 试样组件 {
+    usecase "渲染数据" as samplesInit
+}
+
+' 初始化
+pageInit --> getLineSettingApi #red
+pageInit --> getSamplesApi #red
+getLineSettingApi --> settingDatasState #red
+getSamplesApi --> chartDatasState #red
+chartDatasState --> chartOptRender #red
+settingDatasState --> settingInit #red
+settingDatasState --> chartOptRender #line:red;text:red : settingParamsToChartOpts 函数处理
+chartDatasState --> samplesInit #red
+
+' 右击曲线设置
+rightClickSetting --> settingFlagState #blue
+settingFlagState --> settingModal #blue
+closeSetting --> settingFlagState #blue
+settingFlagState --> settingModal #blue
+
+' 上下步与确定
+stepSetting --> postLineSettingApi #green
+postLineSettingApi --> settingDatasState #green
+settingDatasState --> chartOptRender #green
+
+' 实验操作
+beginTest --> zqmPushData #orange
+zqmPushData --> chartDatasState #orange
+zqmPushData -> postSamplesApi #line:orange;text:orange : 后台处理, 不用关心
+chartDatasState --> chartDataRender #orange
+@enduml

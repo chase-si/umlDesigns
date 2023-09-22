@@ -1,0 +1,124 @@
+@startuml
+left to right direction
+
+package 操作 {
+    usecase 初始化 as "初始化加载"
+}
+
+package hooks封装 {
+    usecase useSample
+    usecase useStaticCurve
+}
+
+package restful接口 {
+    usecase daqAPI as "
+        daqAPI
+        ---
+        /flow-chart/daq
+    "
+    usecase 曲线设置API as "
+        曲线设置
+        ---
+        /static-curve
+    "
+    usecase XY轴选项API as "
+        XY轴选项API
+        ---
+        /variable/signal
+    "
+    usecase XY轴单位API as "
+        XY轴单位API
+        ---
+        /units/list
+    "
+    usecase 结果变量API as "
+        结果变量API(结果变量列表)
+        ---
+        /variable/result
+    "
+    usecase 试样列表API as "
+        试样列表数据
+        ---
+        /samples/tree 
+    "
+    usecase 试样历史数据API as "
+        试样历史数据 + tags(结果变量) API
+        ---
+        /project/incetance/data + [sampleID] 
+    "
+}
+
+package projectRedux {
+    usecase sampleData as "试样列表(sampleData)"
+    usecase optSample as "当前试样(optSample)"
+    usecase sampleHistoryData as "试样历史数据(sampleHistoryData)"
+    usecase sampleTags as "试样tags(sampleTags)"
+}
+
+package staticCurveRedux {
+    usecase settingModalData as "曲线设置form(settingModalData)"
+    usecase unitsRes as "单位列表(unitsRes)"
+    usecase signalRes as "信号结果/轴通道(signalRes)"
+    usecase resultsVars as "结果变量(resultsVars)"
+}
+
+package chart组件 {
+    usecase "chart设置" as chartOptRender
+    usecase "chart的数据线" as chartDataRender
+    usecase "chart的标签块" as chartTagBlock
+}
+
+package 设置参数组件 {
+    usecase "form表单" as settingInit
+}
+
+package 试样组件 {
+    usecase "列表list" as samplesInit
+}
+
+package 表格组件 {
+    usecase 结果表格
+    usecase 统计表格
+}
+
+' 曲线数据相关初始化
+初始化 --> useSample #orange
+useSample --> 试样列表API #orange
+试样列表API --> 试样历史数据API #orange
+试样历史数据API --> sampleHistoryData #orange
+sampleHistoryData --> chartDataRender #line:orange;text:orange : 画线
+
+试样列表API --> sampleData #orange
+sampleData --> samplesInit #line:orange;text:orange : 颜色,id-->列表
+
+useSample --> 结果变量API #orange
+结果变量API --> sampleTags #line:orange;text:orange : 总结果列表
+试样历史数据API --> sampleTags #line:orange;text:orange : 各个试样的结果变量Value
+sampleTags --> chartDataRender #line:orange;text:orange : 线上标点
+sampleTags --> chartTagBlock #orange
+sampleTags --> 结果表格 #orange
+sampleTags --> 统计表格 #orange
+
+' 曲线设置相关初始化
+初始化 --> useStaticCurve #red
+useStaticCurve --> 结果变量API #line:red;text:red
+结果变量API --> resultsVars #line:red;text:red
+resultsVars --> settingInit #line:red;text:red : 曲线设置-测试结果左侧列表
+
+useStaticCurve --> 曲线设置API #line:red;text:red
+曲线设置API --> settingModalData #red
+settingModalData --> chartOptRender #line:red;text:red : setting form 转 opt数据
+settingModalData --> settingInit #line:red;text:red : 加载form数据
+
+useStaticCurve --> XY轴单位API #red
+XY轴单位API --> signalRes #red
+signalRes --> settingInit #line:red;text:red : 轴的数据源设置
+
+useStaticCurve --> XY轴选项API #line:red;text:red
+XY轴选项API --> unitsRes #red
+unitsRes --> settingInit #line:red;text:red : 轴的单位设置
+
+' 其他操作
+samplesInit --> optSample #line:blue;text:blue : 点击事件
+optSample --> chartDataRender #line:blue;text:blue : 影响曲线的激活线,标签
+@enduml

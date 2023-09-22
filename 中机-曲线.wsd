@@ -1,0 +1,90 @@
+@startuml
+participant 菜单
+participant redux
+participant chartContainer
+participant chart
+
+' 激活十字线逻辑
+alt 激活十字线
+菜单 -> 菜单: 右击激活十字线
+菜单 -> redux: 十字线state->true
+redux -> 菜单: 1.撤销十字线 \n2.新出现创建结果 \n3.隐藏设置断裂点
+redux -> chartContainer: 十字线state
+chartContainer -[#Red]> chart: ?属性 + 点回调func
+activate chart
+chart -> chart: activeLine自动聚焦最后一个点
+chart -> chart: 右上角出现label, label显示聚焦的点的X Y信息
+chart -> chartContainer: 回调输出点信息
+chart -> chart: 单击/左右移动activeLine, label变化
+chart -> chartContainer: 回调输出点信息
+deactivate chart
+    alt 1.撤销十字线
+    菜单 -> 菜单: 右击撤销十字线
+    菜单 -> redux: 十字线state->false
+    redux -> 菜单: 菜单变为激活十字线
+    redux -> chartContainer: 十字线state
+    chartContainer -[#Red]> chart: ?属性
+    activate chart
+    chart -> chart: 十字线 + 回调 + label关闭
+    deactivate chart
+    else 2.创建结果
+    菜单 -> 菜单: 右击创建菜单
+    菜单 -> redux: 创建菜单state->true
+    redux -> chartContainer: 创建菜单state
+    activate chartContainer
+    chartContainer -> chartContainer: 出弹窗
+    chartContainer -> chartContainer: 回调输出点信息
+    chartContainer -> chartContainer: post接口 [tags]
+    deactivate chartContainer
+    chartContainer -> redux: 创建菜单state->false
+    redux -> chartContainer: 弹窗消失
+    end
+end
+
+' 设置断裂点逻辑
+alt 设置断裂点
+菜单 -> 菜单: 右击设置断裂点
+菜单 -> redux: 设置断裂点state->true
+redux -> 菜单: 1.隐藏激活十字线 \n2.出现接受断裂点 \n3.出现撤销十字线
+redux -> chartContainer: 设置断裂点state
+chartContainer -[#Red]> chart: ?属性 + 点回调func
+activate chart
+chart -> chart: activeLine自动聚焦最后一个点
+chart -> chart: 右上角出现[断裂点label], label的点的X Y信息
+chart -> chartContainer: 回调输出点信息
+chart -> chart: 单击/左右移动activeLine, label变化
+chart -> chartContainer: 回调输出点信息
+deactivate chart
+    alt 1.撤销十字线
+        菜单 -> 菜单: 右击撤销十字线
+        菜单 -> redux: 设置断裂点state->false
+        redux -> 菜单: 变回为激活十字线 + 设置断裂点
+        redux -> chartContainer: 设置断裂点state
+        chartContainer -[#Red]> chart: ?属性
+        activate chart
+        chart -> chart: 十字线 + 回调 + label关闭
+        deactivate chart
+    else 2.接受断裂点
+        菜单 -> 菜单: 右击接受断裂点
+        菜单 -> redux: 当前线断裂点stateArr更新
+        redux -> 菜单: stateArr不为空, 出现复位断裂点
+        redux -[#Red]> chartContainer: stateArr处理?, 截断当前试样data
+        activate chart
+        chartContainer -[#Red]> chart: 属性?事件?
+        chart -> chart: 重绘当前(指定ID)试样
+        deactivate chart
+
+        alt 复位断裂点
+            菜单 -> 菜单: 右击复位断裂点
+            菜单 -> redux: 当前线断裂点stateArr移除最后一个断裂点
+            redux -> 菜单: 判断stateArr长度, 显示复位断裂点与否
+            redux -[#Red]> chartContainer: stateArr处理?, 截断当前试样data
+            activate chart
+            chartContainer -[#Red]> chart: 属性?事件?
+            chart -> chart: 重绘当前(指定ID)试样
+        end
+    end
+end
+
+' 显示标签
+@enduml

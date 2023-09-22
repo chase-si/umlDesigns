@@ -1,0 +1,110 @@
+@startuml
+package 选择内容下组件 {
+    usecase 曲线1#orange as "
+        曲线1
+        ---
+        曲线设置id1
+    "
+    usecase 曲线2#red as "
+        曲线2
+        ---
+        曲线设置id2
+    "
+}
+
+package 页面 {
+    package 左 {
+        usecase 曲线1左#orange as "
+            曲线1左
+            ---
+            props:
+            布局id-左
+            曲线id-曲线设置id1
+        "
+    }
+    package 中 {
+        usecase 曲线1中#orange as "
+            曲线1中
+            ---
+            props:
+            布局id-中
+            曲线id-曲线设置id1
+        "
+    }
+    package 右 {
+        usecase 曲线2右#red as "
+            曲线2右
+            ---
+            props:
+            布局id-右
+            曲线id-曲线设置id2
+        "
+    }
+    usecase 页面曲线右击组件
+}
+
+package staticCurveHooks {
+    package restful接口 {
+        usecase daqAPI as "
+            daqAPI
+            ---
+            /flow-chart/daq
+        "
+        usecase 曲线设置API as "
+            曲线设置
+            ---
+            /static-curve
+        "
+        usecase XY轴单位API as "
+            XY轴单位API
+            ---
+            /units/list
+        "
+        usecase 结果变量API as "
+            结果变量API(结果变量列表)
+            ---
+            /variable/result
+        "
+        usecase 历史数据与历史结果变量
+    }
+
+    package staticCurveRedux {
+        package childrenState {
+            usecase 曲线设置id1state#orange
+            usecase 曲线设置id2state#red
+        }
+        usecase currentSettingId
+        usecase resultsVarsList
+        usecase daqList
+        usecase unitList
+        usecase settingResList
+    }
+}
+
+选择内容下组件 --> 页面: 拖拽进页面
+
+'hooks 内部
+daqAPI --> daqList
+曲线设置API --> 曲线设置id1state #line:orange;text:orange
+曲线设置API --> 曲线设置id1state #line:orange;text:orange
+曲线设置API --> 曲线设置id2state #line:red;text:red
+历史数据与历史结果变量 --> 曲线设置id1state #line:orange;text:orange
+历史数据与历史结果变量 --> 曲线设置id1state #line:orange;text:orange
+历史数据与历史结果变量 --> 曲线设置id2state #line:red;text:red
+曲线设置API --> settingResList
+XY轴单位API --> unitList
+结果变量API --> resultsVarsList
+staticCurveHooks <-- 页面: 初始化调用
+
+曲线设置id1state --> 曲线1左 #line:orange;text:orange : 订阅渲染
+曲线设置id1state --> 曲线1中 #line:orange;text:orange : 订阅渲染
+曲线设置id2state --> 曲线2右 #line:red;text:red : 订阅渲染
+
+currentSettingId <--> 页面曲线右击组件 #line:blue;text:blue : 1.右击改变id
+childrenState <---> 页面曲线右击组件 #line:blue;text:blue : 2.根据id选择state交互
+@enduml
+
+注释:
+color:
+曲线1 #line:orange;text:orange 
+曲线2 #line:red;text:red 

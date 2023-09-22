@@ -1,0 +1,23 @@
+@startuml
+participant 前端开发环境
+participant electron客户端
+participant 后端
+participant db
+participant 本地
+
+alt 开发环境
+前端开发环境 -> 前端开发环境: 开发环境写可用组件, 测试
+前端开发环境 -> 前端开发环境: webpack打包成module
+前端开发环境 -> electron客户端: 点击上传module文件
+electron客户端 -> 后端: 发送module文件
+后端 -> 本地: 存放module文件
+后端 -> db: module文件名 + module路径 
+else 使用环境
+electron客户端 -> 后端: 特定动态模版场景(路由?组件?), 调用动态组件接口
+note left: 比如昨天开会的例子, 图表使用
+后端 <- db: 获取module文件名 + module路径
+electron客户端 <- 后端: 接口拿到module文件名 + module路径
+electron客户端 <- 本地: const Component = require(module路径)
+electron客户端 -> electron客户端: render Component
+end
+@enduml

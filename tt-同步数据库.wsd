@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+
+package 上层数据库 {
+    usecase a as "
+      耳机
+    "
+}
+
+package 本地数据库 {
+    usecase "耳机备份" as aa
+    usecase "耳机copy1" as aaa
+    usecase "耳机copy2" as aab
+}
+
+package 本地订单 {
+    usecase "下单1" as order1
+    usecase "下单2" as order2
+}
+
+a --> aa #line:red;text:red : 初次同步耳机数据
+aa --> aaa #line:red;text:red : 同步数据
+aaa --> order1 #line:red;text:red : 下单
+aaa <-- order1 #line:red;text:red : 查询
+
+a --> aa #line:blue;text:blue : 变更后同步耳机数据
+aa <--> aaa #line:blue;text:blue : 1.比较
+aa --> aab #line:blue;text:blue : 2.不同则新增同步数据
+aab --> order2 #line:blue;text:blue : 下单
+aab <-- order2 #line:blue;text:blue : 查询
+@enduml

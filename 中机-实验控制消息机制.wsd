@@ -1,0 +1,45 @@
+@startuml
+
+== 开始任务 ==
+实验操作 -> excute接口: 调用开始
+excute接口 -> 后端: 开始任务[process_id + sample_code]
+后端 -> 命令控制Topic: 开始任务[process_id + sample_code]
+
+命令控制Topic -> 设备: 下发任务
+命令控制Topic <- 设备: 回执成功[process_id + sample_code + daq_id]
+
+命令控制Topic -> 后端: 通知后端
+后端 -[#Red]> db: 改试样状态db
+
+zmq维护 <- 命令控制Topic: 收到[process_id + sample_code + daq_id]
+zmq维护 -> 实验操作: 改实验状态
+
+
+设备 -> 数据Topic: 上数据
+zmq维护 -> 数据Topic: 订阅数据[process_id + sample_code + daq_id]
+数据Topic -> zmq维护: 数据 + 渲染
+
+box "前端"
+participant 实验操作
+participant zmq维护
+end box
+
+box "zmq"
+participant 命令控制Topic
+participant 数据Topic
+participant 消息提示Topic
+end box
+
+box "restful"
+participant excute接口
+end box
+
+box "后端"
+participant 后端
+participant db
+end box
+
+box "设备(c#)"
+participant 设备
+end box
+@enduml

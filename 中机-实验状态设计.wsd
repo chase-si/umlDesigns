@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+
+package 顶栏操作 {
+    usecase 开始
+    usecase 暂停
+    usecase 恢复
+    usecase 终止
+}
+
+package 实验状态 {
+    usecase ing
+    usecase history
+    usecase pause
+}
+
+package reduxSubTask {
+    usecase 当前做试验的试样 as "
+        当前做试验的试样
+        --
+        subTaskSample
+    "
+    usecase 信号实时数据 as "
+        信号实时数据
+        --
+        subTaskSignalData
+    "
+}
+
+package reduxProject {
+
+}
+
+package 曲线组件 {
+    usecase "渲染设置参数" as chartOptRender
+    usecase "渲染图表参数" as chartDataRender
+}
+
+' zqmPushData -> postSamplesApi #line:orange;text:orange : 后台处理, 不用关心
+' chartDatasState --> chartDataRender #orange
+@enduml

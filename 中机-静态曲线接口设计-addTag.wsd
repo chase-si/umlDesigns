@@ -1,0 +1,61 @@
+@startuml
+left to right direction
+
+package 操作 {
+    usecase 设置断裂点 as "设置断裂点/创建结果"
+}
+
+package restful接口 {
+    usecase 曲线设置API as "
+        曲线设置
+        ---
+        /static-curve
+    "
+
+    usecase 试样结果变量保存API as "
+        试样结果变量保存API
+        ---
+        /project/result/data
+    "
+
+    usecase 批量增加结果变量API as "
+        批量增加结果变量
+        ---
+        /variable/result/batch
+    "
+
+    usecase 结果变量查询API as "
+        结果变量查询
+        ---
+        /variable/result
+    "
+}
+
+package otherHooks {
+    usecase sample初始化 as "
+        useSample
+        ---
+        initSampleTreeAndHistoryData(初始化操作)
+    "
+    usecase table设置 as "
+        useTableConfig
+        ---
+        initTableConfigData(获取table设置接口数据)
+    "
+}
+
+package staticCurveRedux {
+    usecase resultsVars as "
+        结果变量列表
+    "
+}
+
+' 设置断裂点
+设置断裂点 --> 批量增加结果变量API #orange
+批量增加结果变量API --> 试样结果变量保存API #orange
+试样结果变量保存API --> 结果变量查询API #orange
+结果变量查询API --> resultsVars #orange
+结果变量查询API --> 曲线设置API #line:orange;text:orange : 更新新增的结果变量, 提交到线tag/块tag/结果变量选择
+结果变量查询API --> sample初始化 #orange
+结果变量查询API --> table设置 #orange
+@enduml

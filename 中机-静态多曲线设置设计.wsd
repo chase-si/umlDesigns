@@ -1,0 +1,30 @@
+@startuml
+box "前端"
+participant 选择界面弹窗
+participant 选择曲线设置模板弹窗
+participant 设置曲线弹窗
+end box
+
+box "后端"
+participant clojure
+participant db
+end box
+
+选择界面弹窗 -> 选择曲线设置模板弹窗: 右击"曲线" -> 新增
+选择曲线设置模板弹窗 -> 选择曲线设置模板弹窗: 出现
+选择曲线设置模板弹窗 -> clojure: get static-curve
+clojure <-> db: 表 t_static_curve
+选择曲线设置模板弹窗 <- clojure: 渲染静态曲线列表
+选择曲线设置模板弹窗 -> 选择曲线设置模板弹窗: 选择 [曲线ID]
+选择曲线设置模板弹窗 -> 设置曲线弹窗: 确认
+设置曲线弹窗 -> 设置曲线弹窗: 出现, \n 加载当前 [曲线ID] 的设置内容
+设置曲线弹窗 -> 设置曲线弹窗: 可编辑, 后确认
+设置曲线弹窗 -> clojure: post /static-curve
+clojure <-> db: 表t_static_curve新增一条; \n 表t_widget新增一条
+clojure -> 设置曲线弹窗: 拿到回调
+设置曲线弹窗 -> 设置曲线弹窗: initWidget
+设置曲线弹窗 -> clojure: get /widget/tree
+clojure <-> db: 表t_widget
+clojure -> 设置曲线弹窗: 接口完毕
+设置曲线弹窗 -> 选择界面弹窗: 更新redux \n 曲线下出现新插入的 曲线widget
+@enduml

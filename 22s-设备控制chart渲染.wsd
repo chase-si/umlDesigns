@@ -1,0 +1,98 @@
+@startuml
+left to right direction
+actor 单总 as s
+
+package 页面操作 {
+    usecase chart as "
+      设备控制页
+      --
+      切换功能
+    "
+    usecase deviceControl1 as "
+      设备控制页
+      --
+      开始分析
+      初始化加载running tasks
+    "
+    usecase replay1 as "
+      回放页面
+      --
+      点击任务
+    "
+    usecase liveTask1 as "
+      单任务页面
+      --
+      查看实时结果
+    "
+    usecase liveTask2 as "
+      单任务页面
+      --
+      关闭实时结果窗口
+    "
+    usecase replay2 as "
+      回放页面
+      --
+      停止分析
+    "
+    usecase deviceControl2 as "
+      设备控制页
+      --
+      停止分析
+    "
+    usecase tabSwitch as "
+      设备控制页
+      --
+      添加tab
+      切换tab
+      删除tab
+    "
+}
+
+package redux内命令 {
+    usecase "初始化加载" as init
+    usecase "开始任务" as begin
+    usecase "停止任务" as stop
+    usecase "切换tab" as tab
+}
+
+package chart组件内函数 {
+    usecase "渲染init数据" as renderInit
+    usecase "渲染ws数据" as renderWs
+    usecase "清除数据" as clear
+    usecase "订阅ws" as wsBuild
+    usecase "清除ws" as wsDestory
+    usecase "保存数据" as saveData
+}
+
+s --> chart #red
+chart --> init #red
+init --> renderInit #red
+
+s --> deviceControl1 #blue
+s --> replay1 #blue
+s --> liveTask1 #blue
+deviceControl1 --> begin #blue
+replay1 --> begin #blue
+liveTask1 --> begin #blue
+begin --> clear #blue
+clear --> wsBuild #blue
+wsBuild --> renderWs #blue
+
+s --> deviceControl2 #green
+s --> replay2 #green
+s --> liveTask2 #green
+replay2 --> stop #green
+liveTask2 --> stop #green
+deviceControl2 --> stop #green
+stop --> wsDestory #green
+stop --> saveData  #green
+
+s --> tabSwitch
+tabSwitch --> tab
+tab -> saveData  #line:orange;text:orange : oldTab
+tab -> wsDestory  #line:orange;text:orange : oldTab
+
+tab --> renderInit #line:purple;text:purple : newTab
+renderInit --> wsBuild #line:purple;text:purple : newTab
+wsBuild --> renderWs #line:purple;text:purple : newTab
+@enduml
