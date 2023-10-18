@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+
+package redux {
+    package global {
+        usecase userName
+    }
+    package ReducerA {
+        usecase stateA
+    }
+}
+
+package ComponentParent {
+    package navbar {
+        usecase navbarInit
+        usecase UI渲染userName
+    } 
+
+    package ComponentA1 {
+        usecase ComponentA1Init
+        usecase UI渲染StateA1
+    }
+
+    package ComponentA2 {
+        usecase ComponentA2Init
+        usecase UI渲染StateA2
+    }
+}
+
+navbarInit --> userName #line:blue;text:blue : 获取接口, dispatch更新
+userName --> UI渲染userName #line:blue;text:blue : 订阅渲染
+
+ComponentA1Init --> stateA #line:red;text:red : 获取接口, dispatch更新
+stateA --> UI渲染StateA1 #line:red;text:red : 获取接口, dispatch更新
+
+ComponentA2Init --> stateA #line:orange;text:orange : 获取接口, dispatch更新
+stateA --> UI渲染StateA2 #line:orange;text:orange : 获取接口, dispatch更新
+@enduml

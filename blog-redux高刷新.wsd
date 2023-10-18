@@ -1,0 +1,19 @@
+@startuml
+:zeroMQ Pair 服务端;
+:zeroMQ Pair 客户端;
+:前端消息解析topic;
+switch (Topic?)
+case (曲线图topic)
+    :Redux曲线图;
+    :曲线图组件渲染;
+case (表格topic)
+    :Redux表格;
+    :表格组件渲染;
+case (表头topic)
+    :Reudx表头;
+    :表头组件渲染;
+case (其他topic)
+    :Reudx其他;
+    :其他组件渲染;
+endswitch
+@enduml
