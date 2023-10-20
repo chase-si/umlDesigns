@@ -1,0 +1,65 @@
+@startuml
+left to right direction
+package 数据库 {
+    map 试样 {
+        试样1 => sample1
+        试样2 => sample2
+    }
+
+    map t_vaiable_input {
+        变量1 => variable_a
+        变量2 => variable_b
+        变量3 => variable_c
+    }
+
+    map 动态组件类别表 {
+        组件1 => input组件
+        组件2 => input组件
+        组件3 => inputNumber组件
+        组件4 => select组件
+    }
+
+    map 试验参数布局 {
+        布局1 => [组件1, 组件3, 组件4]
+        布局2 => [组件1, 组件2]
+    }
+
+    map 试样value {
+        sample1关联vaiable_a => value1
+        sample1关联vaiable_b => value2
+        sample1关联vaiable_c => value3
+        sample2关联vaiable_a => value1
+        sample2关联vaiable_b => value2
+        sample2关联vaiable_c => value3
+    }
+}
+
+package 配置页面 {
+    usecase 新建组件 #red
+    usecase 配置布局 #pink
+}
+
+package 使用页面 {
+    usecase 加载组件 #green
+    usecase 更新组件 #purple
+    usecase 新建试样 #blue
+}
+
+新建组件 <-- t_vaiable_input #line:red;text:red : 1.关联一个输入变量并继承
+新建组件 --> 动态组件类别表 #line:red;text:red : 2.提交保存, incert一条数据
+
+配置布局 <-- 动态组件类别表 #line:pink;text:pink : 1. 选择相应的组件
+配置布局 --> 试验参数布局 #line:pink;text:pink : 2. 提交保存, incert一条数据
+
+加载组件 <-- 试验参数布局 #line:green;text:green : 1. 拿试验参数布局数据
+加载组件 <-- 试样value #line:green;text:green : 2. 拿[组件1 2 3 4]关联的[输入变量] \n + 当前试样 关联的值
+
+新建试样 --> 试样 #line:blue;text:blue : 1. 试样插入一条数据
+新建试样 <-- 试验参数布局 #line:blue;text:blue : 2. 拿[组件1 2 3 4]关联的[输入变量]
+新建试样 --> 试样value #line:blue;text:blue : 3. 试样value新插入一套数据
+
+更新组件 --> 试样value #line:purple;text:purple : 1. 更新[试样code]+[输入变量]对应的值
+
+试样value --> t_vaiable_input #line:orange;text:orange : 兼容修改静态输入变量的值
+
+@enduml
