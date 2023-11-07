@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+package 前端 {
+    usecase 组件A as "
+        组件A
+    " 
+    usecase 组件B as "
+        组件B
+    "
+}
+
+package db {
+    usecase 组件A的DB
+    usecase 组件B的DB
+}
+
+package C实例化 {
+    usecase 实例化A
+    usecase 实例化B
+}
+
+组件A --> 实例化A #line:red;text:red : 失焦点改A本身
+组件A --> 实例化B: 有脚本改变B
+
+实例化A --> 组件A的DB #line:red;text:red 
+实例化B --> 组件B的DB
+
+实例化A --> 组件A #line:red;text:red : zmq通知, 组件渲染
+实例化B --> 组件B: zmq通知, 组件渲染
+
+@enduml

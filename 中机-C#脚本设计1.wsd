@@ -1,0 +1,33 @@
+@startuml
+left to right direction
+package 前端 {
+    usecase 组件A as "
+        组件A
+    " 
+    usecase 组件B as "
+        组件B
+    "
+    usecase 保存
+    usecase 取消
+}
+
+package db {
+    usecase 组件B的新DB
+    usecase 组件B的旧DB
+}
+
+package C实例化 {
+    usecase 实例化A
+    usecase 实例化B
+}
+
+组件A --> 实例化B: 失焦, restful接口调用
+实例化B --> 组件B: zmq通知, 组件渲染
+
+保存 --> 组件B的新DB #line:red;text:red : 点击保存
+组件B的新DB --> 实例化B #red
+
+取消 --> 组件B的旧DB #line:orange;text:orange : 触发难以保证
+组件B的旧DB --> 实例化B #orange
+实例化B --> 组件B #line:orange;text:orange : 前端不要的推送
+@enduml
