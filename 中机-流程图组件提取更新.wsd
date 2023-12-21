@@ -1,0 +1,31 @@
+@startuml
+title 流程图组件提取更新(上位机限位)
+participant restful接口
+box 前端
+participant data
+participant UI
+end box
+
+== -didMount调用接口begin- ==
+note over restful接口: get接口["/flow-chart/tree"]
+restful接口 -> data: 获取流程图数据[flowData]
+note over restful接口: get接口["/control/library/tree"]
+restful接口 -> data: 获取子任务列表[subTasks]
+data -> UI: [subTasks]渲染选择列表
+== -didMount调用接口end- ==
+
+== -选择具体子任务渲染begin- ==
+UI -> UI: 从[subTasks]列表中选择[限位检测子任务id]
+UI -> data: 深度递归[flowData], 找到[限位检测子任务id]的Data
+data -> data: 处理data: 过滤不需要渲染的数据
+data -> UI: 渲染UI
+
+== -选择具体子任务渲染end- ==
+
+== -编辑该子任务后保存begin- ==
+UI -> UI: 获取页面[editData]
+UI -> data: [editData]塞回[flowData]
+note over restful接口: put接口["/flow-chart/tree"]
+data -> restful接口: 更新流程图内具体子任务
+== -编辑该子任务后保存end- ==
+@enduml
