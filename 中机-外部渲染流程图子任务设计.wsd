@@ -1,0 +1,56 @@
+@startuml
+title 外部渲染流程图子任务设计
+participant 前端流程图组件
+participant 数据源
+participant 自定义前端组件
+
+note over 数据源
+/flow-chart/tree - 主流程图
+/action/list - 动作管理器
+endnote
+前端流程图组件 <- 数据源: redux or restful获取
+activate 前端流程图组件
+    前端流程图组件 --> 前端流程图组件: processRender组件
+    activate 前端流程图组件
+    前端流程图组件 --> 前端流程图组件: ...很多其他组件
+    前端流程图组件 --> 前端流程图组件: Basic组件
+    note left: ..../renderPanelParams/components/basic
+        activate 前端流程图组件
+        前端流程图组件 --> 前端流程图组件: RenderParams组件
+        前端流程图组件 -[#red]-> 前端流程图组件: <font color=red>渲染显示某个子任务参数
+        note left: @/components/renderParams/index
+        deactivate
+    前端流程图组件 -> 数据源: 保存新的大流程图JSON
+    deactivate
+deactivate
+
+自定义前端组件 <- 数据源: redux or restful获取
+activate 自定义前端组件
+    自定义前端组件 --> 自定义前端组件: 指定[流程图]和[子任务]
+    自定义前端组件 --> 自定义前端组件: 递归找到特定子任务的渲染数据
+    activate 自定义前端组件
+        note over 自定义前端组件
+        Basic props 新增 <color red>subTaskRenderKey
+        标识特殊渲染 -> 不渲染子任务名称等通用信息
+        endnote
+        自定义前端组件 --> 自定义前端组件: Basic组件
+        activate 自定义前端组件
+            自定义前端组件 --> 自定义前端组件: RenderParams组件
+            note right
+            RenderParams 继承处理 <color red> subTaskRenderKey
+            新增
+            <color red>@/components/renderParams/components/自定义前端渲染
+            endnote
+            自定义前端组件 --> 自定义前端组件: RenderParams组件根据subTaskRenderKey, 选择渲染[自定义前端渲染]
+            activate 自定义前端组件
+                自定义前端组件 --> 自定义前端组件: <font color=red> 自定义前端渲染子任务
+            deactivate
+        deactivate
+    deactivate
+    note over 数据源
+    主流程图 和 动作管理器各有<color red>复杂的提交参数逻辑</color>, 阅读代码, 略.
+    endnote
+    自定义前端组件 -> 数据源: 保存新的大流程图JSON
+deactivate
+@enduml
+
