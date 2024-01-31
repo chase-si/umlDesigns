@@ -1,0 +1,45 @@
+@startuml
+title 动态数据再分析
+box 前端
+participant 动作流程图
+participant 分析表单
+participant 曲线
+end box
+box 后端
+participant clojure
+participant "c#"
+end box
+
+== 试验阶段 ==
+"c#" -> clojure: [实验数据]和[结果变量A/B]到db
+== 试验阶段end ==
+
+== 分析阶段配置 ==
+clojure -> 曲线: [试验数据]绘图
+clojure -> 分析表单: 可填入的[其他参数]上次保存数据
+autonumber
+动作流程图 -> 动作流程图: 配置[再分析]动作id?
+note over 动作流程图
+1. 写脚本?
+分别需要获取 [结果变量A, 结果变量B]
+[其他参数] 输入变量
+[线上标点] 输入变量, 并根据此去查db
+2. 下发dll
+endnote
+分析表单 -> 分析表单: form组件绑定[其他参数] 输入变量
+分析表单 -> 分析表单: button 绑定 [再分析]动作id
+activate 曲线
+曲线 -> 曲线: 右击菜单[设置]
+note right
+右击菜单:
+==
+设置 
+开始标点/线
+确认标点/线
+endnote
+曲线 -> 曲线: 设置内给曲线标的点绑定[线上标点]输入变量
+曲线 -> 曲线: 标点/标线
+deactivate 曲线
+曲线 -> clojure: 确认标点/标线, 接口更新[输入变量]
+== 分析阶段配置end ==
+@enduml
