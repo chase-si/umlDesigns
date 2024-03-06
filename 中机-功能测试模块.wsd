@@ -1,0 +1,35 @@
+@startuml
+autonumber 1.1
+
+box "前端"
+participant 前端弹窗
+end box
+
+box "后端"
+participant clojure
+participant "c#"
+end box
+
+activate 前端弹窗
+前端弹窗 -> 前端弹窗: 打开弹窗
+' 前端弹窗 -> 前端弹窗: 监听[通知topic]
+前端弹窗 -> clojure: 调用[查询接口]
+clojure -> "c#": 下发到c#
+"c#" -> "c#": 处理略
+"c#" -> clojure: 返回数据
+clojure -> 前端弹窗: [查询接口]返回数据
+前端弹窗 -> 前端弹窗: button和label更新UI
+deactivate 前端弹窗
+autonumber stop
+
+== 分隔符 ==
+
+autonumber 2.1
+前端弹窗 -> 前端弹窗: 点击button
+前端弹窗 -> clojure: 调用[下发接口]
+clojure -> "c#": 组织参数下发
+"c#" -> "c#": 处理略
+clojure <- "c#": 返回数据
+clojure -> 前端弹窗: [下发接口]返回数据
+前端弹窗 -> 前端弹窗: button和label更新UI
+@enduml

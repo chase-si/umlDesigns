@@ -4,9 +4,10 @@ participant 前端流程图组件
 participant 数据源
 participant 自定义前端组件
 
+== 原流程图子任务相关渲染 ==
 note over 数据源
 /flow-chart/tree - 主流程图
-/action/list - 动作管理器
+/action/list - 动作流程图数据
 endnote
 前端流程图组件 <- 数据源: redux or restful获取
 activate 前端流程图组件
@@ -20,10 +21,19 @@ activate 前端流程图组件
         前端流程图组件 -[#red]-> 前端流程图组件: <font color=red>渲染显示某个子任务参数
         note left: @/components/renderParams/index
         deactivate
-    前端流程图组件 -> 数据源: 保存新的大流程图JSON
+    note over 数据源
+    /subtask - 子任务
+    end note
+    前端流程图组件 -> 数据源: 保存子任务数据
     deactivate
 deactivate
 
+== 当前方案, 外部新组件渲染流程图子任务 ==
+note over 数据源
+/action/list - 动作流程图数据
+/dongtai/config - 动态试验的配置信息,
+存了前端组件绑定了哪个动作流程图id
+endnote
 自定义前端组件 <- 数据源: redux or restful获取
 activate 自定义前端组件
     自定义前端组件 --> 自定义前端组件: 指定[流程图]和[子任务]
@@ -48,9 +58,9 @@ activate 自定义前端组件
         deactivate
     deactivate
     note over 数据源
-    主流程图 和 动作管理器各有<color red>复杂的提交参数逻辑</color>, 阅读代码, 略.
-    endnote
-    自定义前端组件 -> 数据源: 保存新的大流程图JSON
+    /subtask - 子任务
+    end note
+    自定义前端组件 -> 数据源: 保存流程图子任务数据
 deactivate
 @enduml
 
