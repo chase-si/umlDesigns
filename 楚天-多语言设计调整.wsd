@@ -1,0 +1,28 @@
+@startuml
+title CT多语言设计调整
+
+participant 前端
+participant 前端静态资源JSON
+participant 后端语言db
+
+box 拓展在线语言包
+    participant 后台管理系统
+    participant 或i18n的locize
+    participant 或CT项目的语言管理页面
+end box
+
+
+== 开发阶段前端实现 ==
+autonumber
+前端 <- 前端静态资源JSON: 读取加载本地语言包
+前端 -> 前端: i18n addResourceBundle(本地)
+前端 <- 后端语言db: 请求加载远程语言包
+前端 -> 前端: 已经加载的本地语言包 merge 远程
+前端 -> 前端: i18n addResourceBundle(merged语言包)
+autonumber stop
+
+== 后续拓展语言包 ==
+后台管理系统 -> 后端语言db: 殊途同归 编辑db语言包
+或i18n的locize -> 后端语言db: 殊途同归 编辑db语言包
+或CT项目的语言管理页面 -> 后端语言db: 殊途同归 编辑db语言包
+@enduml
