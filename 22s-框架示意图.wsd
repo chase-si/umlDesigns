@@ -1,0 +1,32 @@
+@startuml
+title Systems Architecture 
+left to right direction
+
+package Application {
+  package Electron {
+    usecase Frontend as "
+      Frontend
+      --
+      [React] production files
+    "
+    
+    usecase Backend as "
+      Backend
+      --
+      [Jar] build from Clojure
+      [SQLite] init by Clojure
+    "
+  }
+}
+
+package Devices {
+  usecase Device1
+  usecase Device2
+}
+
+Frontend <--> Backend: restful API => CRUD
+Frontend <--> Backend: websocket => render Chart Data
+
+Device1 <--> Application: TCP connection
+Device2 <--> Application: TCP connection
+@enduml
