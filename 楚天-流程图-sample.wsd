@@ -1,0 +1,173 @@
+@startuml
+title develop design demo
+left to right direction
+
+package useFlow {
+    usecase initHooks #ff0000 as "
+        initHooks
+        ----
+        初始化整个页面
+    "
+    usecase switchFlowHooks #0000ff;line:white;text:white as "
+        switchFlowHooks
+        ----
+        左侧树点击某个节点
+    "
+    usecase updateFlowHooks #purple;text:white as "
+        updateFlowHooks
+        ----
+        编辑流程图
+    "
+    usecase useGetStepAttr #00cc00
+    usecase useUpdateStepAttr
+}
+
+package restful接口 {    
+    usecase getSFC as "
+        getSFC
+        ----
+        /proj/sfc
+        获取某个节点SFC数据(2层结构)
+    "
+    usecase editSFC as "
+        postSFC or putSFC
+        ----
+        /proj/sfcs
+        获取flow数据
+    "
+    usecase deleteSFC as "
+        /proj/deleteSFC
+        ----
+        /proj/sfcs
+        获取flow数据
+    "
+    usecase batchUpdateNodes as "
+        post /proj/sfcs
+        ----
+        批量删除, 新建, 修改Unit, Operation, Phase节点
+    "
+    usecase getRecipeFlow as "
+        /proj/sfc/tree
+        ----
+        获取recipe的完整层级数据
+    "
+    usecase getStepAttr as "
+        /proj/getStepAttr(缺失)
+        ----
+        获取步属性
+    "
+    usecase editStepAttr as "
+        /proj/editStepAttr(缺失)
+        ----
+        编辑步属性
+    "
+}
+
+package redux {
+    usecase ReduxRecipeFlowData as "
+        ReduxRecipeFlowData
+        ----
+        从接口拿的recipe flow数据, 渲染左侧树
+    "
+    usecase ReduxActiveFlowData as "
+        ReduxactiveFlowData
+        ----
+        从接口拿的某节点数据, 渲染流程图
+    "
+    usecase ReduxActiveTreeData as "
+        ReduxActiveTreeNode
+        ----
+        左侧数中激活出来的
+    "
+    ' usecase ReduxActiveFlowData
+    usecase ReduxActiveNodeAId as "
+        ReduxActiveNodeAId
+        ----
+        负责渲染流程图的激活点A
+    "
+    usecase ReduxActiveNodeBId as "
+        ReduxActiveNodeBId
+        ----
+        负责显示次激活node激活点B
+        1. 显示tree中选择的节点
+        2. 显示右侧的步属性
+    "
+    usecase ReduxStepAttr as "
+        ReduxStepAttr
+        ----
+        负责显示右侧的步属性内容
+    "
+}
+
+package TreeComponent {
+    usecase 树状结构渲染 
+    usecase 单击Recipe #0000ff;line:white;text:white as "
+        单击Recipe
+        ---
+        单击Unit, Operation类似
+    "
+    usecase 单击Phase #ff6666 as "
+        单击Phase
+        ---
+        出弹窗, 略
+    "
+}
+
+package SvgComponent {
+    usecase 流程图svg渲染 as "
+        流程图svg渲染
+        ---
+        Recipe, Unit, Operation流程图类似
+    "
+    usecase SVG节点选中 #00cc00
+    usecase 流程图编辑 #purple;text:white as "
+        流程图编辑
+        ---
+        增加顺序, 删除(略), 修改, 拓展分支等
+    "
+}
+
+'初始渲染
+initHooks <-- getRecipeFlow #line:ff0000;text:ff0000 : 1.1 接口获取receipe完整数据数据
+initHooks <-- getSFC #line:ff0000;text:ff0000 : 1.2 接口获取流程图数据
+initHooks --> ReduxRecipeFlowData #line:ff0000;text:ff0000 : 2.1 dispatch 赋值初始 ReduxActiveFlowData 
+initHooks --> ReduxActiveFlowData #line:ff0000;text:ff0000 : 2.2 dispatch 赋值初始 ReduxActiveFlowData
+initHooks --> ReduxActiveNodeAId #line:ff0000;text:ff0000 : 2.3 dispatch 赋值初始激活点=receipe的id
+ReduxRecipeFlowData --> 树状结构渲染 #line:ff0000;text:ff0000 : 3.1 tree数据渲染
+ReduxActiveFlowData --> 流程图svg渲染 #line:ff0000;text:ff0000 : 3.2 流程图数据渲染
+
+'网系节点选择渲染不同流程图
+单击Recipe --> switchFlowHooks #line:0000ff;text:0000ff : 1. 单击某节点引起右侧渲染不同的流程图
+switchFlowHooks <--> getSFC #line:0000ff;text:0000ff : 2. 获取某个节点的流程图数据
+switchFlowHooks --> ReduxActiveNodeAId #line:0000ff;text:0000ff : 3.1 ActiveNodeId 赋值
+switchFlowHooks --> ReduxActiveFlowData #line:0000ff;text:0000ff : 3.2 ReduxActiveFlowData 赋值
+ReduxActiveNodeAId --> 树状结构渲染 #line:0000ff;text:0000ff : 4.1 active节点渲染
+ReduxActiveFlowData --> 流程图svg渲染 #line:0000ff;text:0000ff : 4.2 流程图数据渲染
+
+' ' '编辑流程图
+流程图编辑 --> updateFlowHooks #line:purple;text:purple : 1. 调用hooks
+updateFlowHooks --> editSFC #line:purple;text:purple : 2.1 接口更新当前svg流程图数据
+updateFlowHooks --> batchUpdateNodes #line:purple;text:purple : 2.2 请求接口批量更新节点们
+updateFlowHooks <-- getRecipeFlow #line:purple;text:purple : 2.3 接口返回全Recipe tree数据
+updateFlowHooks --> ReduxRecipeFlowData #line:purple;text:purple : 3.1 dispatch ReduxRecipeFlowData
+updateFlowHooks --> ReduxActiveFlowData #line:purple;text:purple : 3.2 dispatch ReduxActiveFlowData
+ReduxRecipeFlowData --> 树状结构渲染 #line:purple;text:purple : 4.1 左侧树重新渲染
+ReduxActiveFlowData --> 流程图svg渲染 #line:purple;text:purple : 4.2 流程图数据渲染
+
+' 流程图节点选择
+' SVG节点选中 --> useGetStepAttr #line:00cc00;text:00cc00 : 1.选中的节点, 调用hooks
+' useGetStepAttr <--> getStepAttr #line:00cc00;text:00cc00 : 2 请求接口
+' useGetStepAttr --> ReduxActiveNodeBId #line:00cc00;text:00cc00 : 3.1 dispatch ReduxActiveNodeBId
+' useGetStepAttr --> ReduxStepAttr #line:00cc00;text:00cc00 : 3.2 dispatch ReduxStepAttr
+' ReduxActiveNodeBId --> 流程图编辑 #line:00cc00;text:00cc00 : 4.1 允许增加顺序等操作
+' ReduxActiveNodeBId --> 左侧Tree #line:00cc00;text:00cc00 : 4.2 次节点激活
+' ReduxStepAttr --> 右侧Attr #line:00cc00;text:00cc00 : 4.3 ReduxStepAttr + ReduxActiveNodeBId 显示属性
+
+' 编辑步属性
+' 步属性 --> useUpdateStepAttr #line:orange;text:orange : 1. 保存, 调用hooks
+' useUpdateStepAttr --> editStepAttr #line:orange;text:orange : 2.1 请求接口,保存当前步属性
+' useUpdateStepAttr --> updateFlowHooks #line:orange;text:orange : 2.2 部属性要塞进流程图, 走紫色流程1以后的步骤
+
+' todo 预留撤销操作的存储
+' ReduxRecipeFlowData --> ReduxActiveFlowData #line:purple;text:purple : 2. 根据ReduxActiveNodeAId 重新影响 ReduxActiveFlowData
+@enduml

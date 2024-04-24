@@ -1,0 +1,169 @@
+@startuml
+title Chase CV
+actor Chase
+
+participant Event
+participant Project
+
+== 2008 ==
+Chase -> Event: NanJing Argiculture University(211)
+activate Event
+note right
+top 3%
+in the China National College Entrance Examination
+endnote
+Event -> Chase: Bachelor of Environmental Sinence
+deactivate Event
+
+== 2012 ==
+
+Chase -> Event: Jobs not related with IT
+
+== 2016 ==
+
+Chase -> Event: self-study JS/CSS/Html
+activate Event
+
+Event -> Event: Read books 
+note right
+<Heading First HTML>
+<DOM Scripting>
+<Professional JavaScript for Web>
+etc...
+endnote
+Event -> Event: get FreeCodeCamp Frontend Certificate
+
+Event -> Chase: 0.5 year later, first job as Frontend developer
+deactivate
+== 2017 ==
+Chase -> Event: Join ShineTech, as Junior Frontend Developer
+activate Event
+
+  Event -> Project: WeChat Applet
+  note over Project
+  js, css, html
+  weChat Applet Document
+  endnote
+
+  Event -> Project: Xueyue(client website, CMS)
+  note over Project
+  jQuery, Bootstrap, Css, PHP, MySQL
+
+  a website for Learning Chinese poetry
+
+  from 0 to 1
+  endnote
+
+  Event -> Project: Wanmen(website)
+  note over Project
+  React(15.4), Mobx, sass, webpack
+
+  a website provide online learning videos
+
+  secondary development
+  endnote
+Chase <- Event: 1.5 years later, leave ShineTech
+deactivate Event
+
+Chase -> Event: Join Imaginato, as Junior~Mid-Level Frontend Developer
+activate Event
+  Event -> Project: Pomelo-fashion(www.pomelofashion.com)
+  note over Project
+  A Thailand shopping website, 2 millions users then.
+
+  React(16.2), Next, Redux, Webpack...
+  fix bugs/develop a mobile website
+
+  Node.js, Loopback, MongoDB, MySQL...
+  work as a Junior Backend Developer(5 months)
+  endnote
+
+  Event -> Project: Tix(www.tix.id)
+  note over Project
+  The biggest ticketing platform in Indonesia 
+
+  React, Redux, sass, webpack
+
+  maintain the website you see, and develop the CMS
+  endnote
+
+  Event -> Project: Shox, goshop, Qraved...
+  note over Project
+  some other projects, some of them closed few years later.
+
+  Qraved use Vue And TypeScipt.
+  endnote
+  Chase <- Event: left Imaginato after 2.5 years
+deactivate Event
+
+Chase -> Event: Join RedCreation, as Mid-Level~Senior Frontend Developer
+activate Event
+  Event -> Project: Electron App(Peptide Protein Synthesis on Windows)
+  note over Project
+  Electron, ClojureScript, Reagent, Martial-ui,
+  re-frame, shadow-cljs
+
+  do the frontend develop with clojureScript
+  endnote
+
+  Event -> Project: some web works
+  note over Project
+  some other shopping websites
+
+  ClojureScript, Reagent, shadow-cljs, ant-design
+  Vue, Wechat Applet
+  endnote
+
+  Event -> Project: Electron App(22 on Linux)
+  note over Project
+  React, Electron, Clojure, SQLite, Styled-components, 
+  Openlayer, EChart, Lighting Chart, Axios, websocket...
+
+  control the hardware devices
+  render data send from them and analysis them.
+
+  As both project Manager and Frontend leader.
+  2~6members for 2 years.
+  endnote
+
+  Event -> Project: other 2 Electron Apps
+  note over Project
+  Copyed the system design from 22.
+  both need to control devices.
+
+  taught the new members how to develop the frontend in a right way.
+  provide some deveplopment design and solitions.
+  provide response design and code review.
+  do some chenllage development.
+  endnote
+
+@enduml
+
+
+' Hello, I’m Chase.
+
+' Let me introduce myself with the PlantUML flow chart.
+
+' I graduated from NanJing Argiculture University in 2012, which is one of the  211. 
+' 211 is short for  the goal of building 100 top collages in 21 centuries. This means that I was at least in the top 3% , in the China National College Entrance Examination.
+' So, although I didn’t study Computer Science, I never doubt my ability to study.
+
+' I became to a Software Developer by self-study in 2016. I read books and did pratice on freeCodeCamp, and I got a Frontend Certificate from it.
+
+' That year, I joined ShineTech as a Junior developer.
+' My main work was wrting html page and responsive CSS, also finished the UX with native javascript. I also learned some PHP and Sqls from my colleagues.
+' At the end of 2017, we got a project called Wanmen. It was developed by React(15.4), the old one with Class Component. We need to do a secondary development.
+' I was a challenge to me then, I didn’t know the React, the Mobx, even didn’t how to use promise and async/await.  and no one taught me. but I did it. 
+
+' After finished the Wanmen, I left ShineTech, and joined Imaginato as a junior or Mid-Level developer.
+' The Imaginato mainly severd the SouthEast Asia clients, such as Thailand, Indonesia.
+' I am very grateful for this experience because I have learned how the International remote team works from there. 
+' I got UI design from figma or Ziplin, and develop requirements from JIRA, and logs in JIRA.
+' reviewed codes and pull request, how to write unit test, how to deploy online and so on. 
+
+
+' teach the new members how to develop the frontend in the right way, and
+' how to package.
+' provide some deveplopment design and solitions.
+' provide response design and code review.
+' do some challenge development.

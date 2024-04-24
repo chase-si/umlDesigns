@@ -1,0 +1,40 @@
+@startuml
+title JSON Path Design
+
+box Datas
+participant JSONData
+participant JSONPath
+end box
+
+box UI
+participant CopyBtn
+participant FetchBtn
+participant Table
+end box
+
+participant LocalStorage
+
+== copy click ==
+autonumber
+CopyBtn -> CopyBtn: click copy button to save
+CopyBtn <- JSONData: get JSON [X1]
+CopyBtn <- JSONPath: get path
+
+note over FetchBtn
+[url or JSON id]X1 + [timeStamps] + [path id]Y1
+JSON & path values
+end note
+CopyBtn -> LocalStorage: save
+autonumber stop
+
+== fetch click ==
+autonumber
+FetchBtn -> FetchBtn: click to fetch
+FetchBtn <- JSONData: get new JSON [X2]
+
+alt if X2 == X1
+    Table <- LocalStorage: get JSON X1 values
+    Table <- JSONData: get new JSON [X2]
+    Table -> Table: render table as the drescription in your STEP7
+end
+@enduml
