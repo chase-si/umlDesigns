@@ -1,0 +1,53 @@
+@startuml
+title Systems Architecture
+header <color red> red for live data</color> \n <color blue> blue for service</color> \n <color orange> orange for DB</color>
+package Application {
+  package Electron {
+    usecase React as "
+      Frontend - React
+      --
+      [js] build from React
+    "
+    
+    usecase C as "
+      Backend - C#
+      --
+      [exe] build from C#
+    "
+
+    usecase DB as "
+      Database - SQLite
+      --
+      [db] init by C#
+    "
+
+    usecase ZeroMQ as "
+      ZeroMQ - Message Share
+    "
+  }
+}
+
+package Device {
+  usecase device
+}
+
+package DLLs {
+  usecase DLL as "
+    C# code for devices
+    --
+    some DLLs
+  "
+}
+
+React <-- C#line:blue;text:blue : Http service
+C --> ZeroMQ#line:blue;text:blue : ZeroMQ service.
+
+DLL <--> C#line:red;text:red : 1. C# to reqeust API
+device <--> DLL#line:red;text:red : 2.use the DLL to control the device
+C --> ZeroMQ#line:red;text:red : 3.1 pub live data
+C --> DB#line:red;text:red : 3.2 save Data
+ZeroMQ --> React#line:red;text:red : 4. sub to render live data
+
+React <--> C#line:orange;text:orange : submit control order / CURD DB data
+C <--> DB#line:orange;text:orange : CURD DB data
+@enduml

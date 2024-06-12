@@ -1,0 +1,26 @@
+@startuml
+title Data Page
+
+participant Frontend
+participant Backend
+
+autonumber
+Frontend -> Backend: Connect to App, API?
+
+alt true
+Frontend <- Backend: Today Data
+note over Frontend, Backend
+{
+    age
+    heigth
+    weight
+    steps
+    heart rate
+    activity energy
+}
+endnote
+Frontend -> Frontend: Render page2
+else false
+Frontend -> Frontend: Render page1
+end
+@enduml

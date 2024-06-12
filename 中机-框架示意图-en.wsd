@@ -1,0 +1,54 @@
+@startuml
+title Systems Architecture 
+left to right direction
+
+package Application {
+  package Electron {
+    usecase React as "
+      Frontend - React
+      --
+      [js] build from React
+    "
+    
+    usecase Clojure as "
+      Backend - Clojure
+      --
+      [Jar] build from Clojure
+      [SQLite] init by Clojure
+    "
+
+    usecase C as "
+      Backend - C#
+      --
+      [exe] build from C#
+    "
+
+    usecase ZeroMQ as "
+      ZeroMQ - Message Share
+    "
+  }
+}
+
+package Device {
+  usecase device
+}
+
+package DLLs {
+  usecase DLL as "
+    C# code for devices
+    --
+    some DLLs
+  "
+}
+
+React <--> Clojure#blue: Http, CRUD the DB data.
+C --> ZeroMQ#blue: provide the ZeroMQ service.
+Clojure <-- C#blue: save to DB
+
+device <--> DLL#red: use the DLL to control the device
+DLL <--> C#red: C# to reqeust API
+
+C <--> ZeroMQ#orange: sub and pub the data from the device
+React <--> ZeroMQ#orange: submit begin order and render live data
+
+@enduml
