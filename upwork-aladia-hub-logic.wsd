@@ -1,0 +1,86 @@
+@startuml
+title "basic logic of the hub page & became teacher"
+
+box "Frontend"
+participant hubPage
+participant teachingPopup
+participant cookie
+end box
+
+box "Store"
+participant authStore
+participant orgStore
+participant profileStore
+participant followersStore
+participant experiencesStore
+end box
+
+box "Backend"
+participant API
+end box
+
+== basic ==
+activate hubPage
+note over hubPage
+/pages/organization/hub/[name].vue
+end note
+hubPage -> hubPage : init()
+autonumber 1.1
+hubPage -> hubPage : get id from `$route.params.name`
+  activate profileStore
+    hubPage -> profileStore : retrieveProfile(id)
+    profileStore -> profileStore : retrieveProfile(id)
+      activate API
+      profileStore -> API : get `/profiles/${id}`
+      profileStore <- API : get `/profiles/${id}`res
+      deactivate API
+    profileStore -> followersStore : update somthing..
+    profileStore -> experiencesStore: update somthing..
+  deactivate profileStore
+hubPage <- profileStore : async request finish
+
+note over hubPage
+todo...logic of context, related APIs:
+`/auth/switch-context`,
+`/auth/switch-context/${id}`
+end note
+hubPage -> authStore : switchContext(id)
+hubPage <- authStore : async request finish
+deactivate hubPage
+autonumber stop
+
+== show popups(teacher as example) ==
+autonumber 2.1
+hubPage -> hubPage : updatePopup()
+activate hubPage
+note over hubPage
+logic to show which popup:
+  const learningPopup = useCookie('learning-popup');
+  this.orgStore.popup.learning =
+    this.popup === 'learning' && !learningPopup.value;
+
+  // teaching popup
+  this.orgStore.popup.teaching =
+    this.popup === 'teaching' && this.isStudent;
+
+  // org popup
+  this.orgStore.popup.organization = this.popup === 'organization';
+end note
+hubPage <- cookie : get`learning-popup` as cookieValue
+hubPage <- orgStore : popup.teaching, popup.learning, popup.learning
+hubPage -> orgStore : orgStore.popup.teaching => true
+deactivate hubPage
+
+note over teachingPopup
+/components/Organization/Hub/Popup/Teaching/index.vue
+end note
+teachingPopup <- orgStore: popup.teaching === true, show
+activate teachingPopup
+teachingPopup -> teachingPopup: becomeTeacher()
+teachingPopup -> profileStore: becomeTeacher(country)
+profileStore -> API: POST `/profiles/teachers`
+profileStore <- API: post Res
+profileStore -> teachingPopup: post Res
+teachingPopup -> cookie: stripe-auth => false
+teachingPopup -> teachingPopup: window.open(res.oboardUrl)
+@enduml

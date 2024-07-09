@@ -1,0 +1,75 @@
+@startuml
+title "basic logic of the payment view page"
+
+box "Frontend"
+participant paymentPage
+end box
+
+box "Store"
+participant authStore
+participant orgStore
+participant hubPaymentStore
+end box
+
+box "Backend"
+participant API
+end box
+
+== get roles (student | teacher | org | user) ==
+autonumber 1.1
+activate authStore
+authStore -> authStore : actions: login()
+authStore -> API : POST `/auth/login`
+API -> authStore: {token} in set-cookie
+authStore -> authStore: actions: getInfo()
+authStore -> API: GET `/profiles/me` with token cookie
+authStore <- API: userData in response
+
+note over authStore
+userData => cookie['user']
+userData => authStore.user
+...'context' logic, I don't need focus now.
+end note
+authStore -> authStore: ↑ save userData in frontend
+note over authStore
+isUser() {
+  return this.context === this.user.id;
+},
+isOrg() {
+  return this.context === this.org.id;
+},
+isTeacher() {
+  return this.user.type === 'teacher';
+},
+isStudent() {
+  return this.user.type === 'user';
+},
+end note
+authStore -> authStore: ↑ getters() about roles:
+deactivate authStore
+
+== before this page ==
+
+note over paymentPage
+router will be:
+/user/hub/${this.user.id}/payment
+/organization/hub/${id}/payment
+end note
+autonumber 2.1
+paymentPage <- authStore: <color red>getters: isUser() or pathParam???</color>
+
+alt if hub(user)
+autonumber 2.1.1
+paymentPage -> paymentPage: `/pages/organization/hub/[name]/payment.vue`
+paymentPage <- authStore: getters: isTeacher() or isStudent()
+paymentPage -> hubPaymentStore:  <color red>TODO: actions: getHubPayment(role)</color>
+hubPaymentStore -> API:  <color red>TODO: request ?</color>
+hubPaymentStore <- API:  <color red>TODO: request ?</color>
+paymentPage -> paymentPage: <color red>PaymentHistory Component load datas</color>
+paymentPage -> paymentPage: <color red>PaymentWidgets Component load datas</color>
+
+else else org
+paymentPage -> paymentPage: <color red>not ready, should be basic page path but same components </color>
+end
+
+@enduml

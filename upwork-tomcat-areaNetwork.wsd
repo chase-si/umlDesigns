@@ -1,0 +1,55 @@
+@startuml
+title Systems Architecture
+header <color blue> Blue: basic connection</color> \n <color red> Red: opeartion flow</color>
+
+left to right direction
+
+package AppElectron {
+  
+  package Frontend {
+    usecase FrontendA as "
+      FrontendA(UI page)
+      --
+      Manage Tomcat IPs
+    "
+    usecase FrontendB as "
+      FrontendB(UI page)
+      --
+      Load Tomcat UI pages
+      (our current website page)
+    "
+  }
+
+  usecase BackendE as "
+    Backend?
+    --
+    Database inside
+  "
+}
+
+package NetworArea {
+  package ServicePCA {
+    usecase TomcatA
+  }
+
+  package ServicePCB {
+    usecase TomcatB
+  }
+
+  package ServicePCMore {
+    usecase TomcatMore
+  }
+}
+
+FrontendA <--> BackendE#line:blue;text:blue :  http://localhost
+TomcatA ---> AppElectron#line:blue;text:blue : http://192.*.1
+TomcatB ---> AppElectron#line:blue;text:blue : http://192.*.2
+TomcatMore ---> AppElectron#line:blue;text:blue : http://192.*.more
+
+FrontendA --> FrontendA#line:red;text:red : 1.select ip A to visit
+FrontendA --> FrontendB#line:red;text:red : 2.navigate to FrontendB
+FrontendB --> TomcatA#line:red;text:red : 3.visit http://192.*.1
+FrontendB <-- TomcatA#line:red;text:red : 4.load TomcatA page in FrontendB
+
+
+@enduml

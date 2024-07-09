@@ -1,0 +1,19 @@
+@startuml
+title Systems Architecture
+package Application {
+  package Electron {
+    usecase Browser as "
+      Browser inside
+      --
+      can prevent opening the devtools to check
+    "
+  }
+}
+
+package ServicePC {
+  usecase Tomcat 
+}
+
+Tomcat -> Browser: still visit with http://192.*
+
+@enduml
