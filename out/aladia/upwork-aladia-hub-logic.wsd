@@ -4,10 +4,11 @@ title "basic logic of the hub page & became teacher"
 box "Frontend"
 participant hubPage
 participant teachingPopup
-participant cookie
+participant stripePage
 end box
 
-box "Store"
+box "Store & Cookie"
+participant cookie
 participant authStore
 participant orgStore
 participant profileStore
@@ -17,6 +18,7 @@ end box
 
 box "Backend"
 participant API
+participant stripeAPI
 end box
 
 == basic ==
@@ -76,11 +78,27 @@ note over teachingPopup
 end note
 teachingPopup <- orgStore: popup.teaching === true, show
 activate teachingPopup
-teachingPopup -> teachingPopup: becomeTeacher()
-teachingPopup -> profileStore: becomeTeacher(country)
+teachingPopup -> teachingPopup: click button, becomeTeacher()
+teachingPopup -> profileStore: fill country, then becomeTeacher(country)
+note over API
+once request, user => teacher
+end note
 profileStore -> API: POST `/profiles/teachers`
 profileStore <- API: post Res
 profileStore -> teachingPopup: post Res
-teachingPopup -> cookie: stripe-auth => false
+note over teachingPopup
+<color red>solve default behavior by browser, which will block to open new window</color>
+end note
 teachingPopup -> teachingPopup: window.open(res.oboardUrl)
+  teachingPopup -> stripePage: new tab in browser
+  activate stripePage
+  stripePage -> stripePage : signup or fill datas
+  stripePage -> stripePage : click to save
+  stripePage -> stripePage : redication then close the page
+  deactivate stripePage
+
+note over teachingPopup
+<color red>how do I know I should refresh the page to get the teacher role?</color>
+end note
+teachingPopup -> teachingPopup: TODO: referesh the page, load data as a teacher
 @enduml
