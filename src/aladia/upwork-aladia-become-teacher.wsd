@@ -1,5 +1,5 @@
 @startuml
-title "basic logic of the hub page & became teacher"
+title "basic logic of became teacher"
 
 box "Frontend"
 participant hubPage
@@ -36,6 +36,10 @@ hubPage -> hubPage : get id from `$route.params.name`
       profileStore -> API : get `/profiles/${id}`
       profileStore <- API : get `/profiles/${id}`res
       deactivate API
+    note over profileStore
+      now stripeConnectOnboard = null
+    end note
+    profileStore -> profileStore : update deatails...
     profileStore -> followersStore : update somthing..
     profileStore -> experiencesStore: update somthing..
   deactivate profileStore
@@ -81,7 +85,9 @@ activate teachingPopup
 teachingPopup -> teachingPopup: click button, becomeTeacher()
 teachingPopup -> profileStore: fill country, then becomeTeacher(country)
 note over API
-once request, user => teacher
+once request
+profile.type => "teacher"
+profile.stripeConnectOnboard : null => "requirement-needed"
 end note
 profileStore -> API: POST `/profiles/teachers`
 profileStore <- API: post Res
@@ -93,12 +99,19 @@ teachingPopup -> teachingPopup: window.open(res.oboardUrl)
   teachingPopup -> stripePage: new tab in browser
   activate stripePage
   stripePage -> stripePage : signup or fill datas
-  stripePage -> stripePage : click to save
-  stripePage -> stripePage : redication then close the page
+  note over stripePage
+  until to the last step and fill all the required datas
+  profile.stripeConnectOnboard : "requirement-needed" => "completed"
+
+  TODO: if not "completed", could visit from profile
+  end note
+  stripePage -> stripePage : each step could click to save
+  stripePage -> stripePage : redirect to the our page
+  stripePage -> stripePage : close the tab
   deactivate stripePage
 
 note over teachingPopup
-<color red>how do I know I should refresh the page to get the teacher role?</color>
+loop to check profile.type === "teacher"
 end note
-teachingPopup -> teachingPopup: TODO: referesh the page, load data as a teacher
+teachingPopup -> teachingPopup: referesh the page, load data as a teacher
 @enduml
