@@ -1,75 +1,84 @@
 @startuml
-title "basic logic of the payment view page"
+title "basic logic of the checkout"
 
 box "Frontend"
-participant paymentPage
+participant otherPages
+participant editCoursePopup
+participant courseDetailPage
+end box
+
+box "Stripe"
+participant stripSignupPage
+participant stripPaymentPage
 end box
 
 box "Store"
-participant authStore
-participant orgStore
-participant hubPaymentStore
+' participant authStore
+' participant orgStore
+' participant hubPaymentStore
 end box
 
 box "Backend"
 participant API
 end box
 
-== get roles (student | teacher | org | user) ==
+== pre operations ==
 autonumber 1.1
-activate authStore
-authStore -> authStore : actions: login()
-authStore -> API : POST `/auth/login`
-API -> authStore: {token} in set-cookie
-authStore -> authStore: actions: getInfo()
-authStore -> API: GET `/profiles/me` with token cookie
-authStore <- API: userData in response
+activate otherPages
+note over otherPages
+check details of the "become a teacher" development docs
+end note 
+otherPages -> otherPages: signup/login
+otherPages -> otherPages: learningPage or teachingPage
+otherPages -> otherPages: click become a teacher
+otherPages -> stripSignupPage: navigate to stripPage
+stripSignupPage -> stripSignupPage: fill all the required fields
+otherPages <- stripSignupPage: navigate to teachingSpace page
+deactivate otherPages
 
-note over authStore
-userData => cookie['user']
-userData => authStore.user
-...'context' logic, I don't need focus now.
-end note
-authStore -> authStore: ↑ save userData in frontend
-note over authStore
-isUser() {
-  return this.context === this.user.id;
-},
-isOrg() {
-  return this.context === this.org.id;
-},
-isTeacher() {
-  return this.user.type === 'teacher';
-},
-isStudent() {
-  return this.user.type === 'user';
-},
-end note
-authStore -> authStore: ↑ getters() about roles:
-deactivate authStore
-
-== before this page ==
-
-note over paymentPage
-router will be:
-/user/hub/${this.user.id}/payment
-/organization/hub/${id}/payment
-end note
+== fill billing ==
 autonumber 2.1
-paymentPage <- authStore: <color red>getters: isUser() or pathParam???</color>
+note over otherPages
+<color red>TODO: add required fields limitions</red>
+<color red>TODO: add docs for billing API requests</red>
+end note 
+otherPages -> editCoursePopup: create new Course 
+activate editCoursePopup
+editCoursePopup -> editCoursePopup: fill data
+editCoursePopup -> editCoursePopup: save data
+editCoursePopup -> editCoursePopup: publish
+deactivate editCoursePopup
 
-alt if hub(user)
-autonumber 2.1.1
-paymentPage -> paymentPage: `/pages/organization/hub/[name]/payment.vue`
-paymentPage <- authStore: getters: isTeacher() or isStudent()
-paymentPage -> hubPaymentStore:  <color red>TODO: actions: getHubPayment(role)</color>
-hubPaymentStore -> API:  <color red>TODO: request ?</color>
-hubPaymentStore <- API:  <color red>TODO: request ?</color>
-paymentPage -> paymentPage: <color red>PaymentHistory Component load datas</color>
-paymentPage -> paymentPage: <color red>PaymentWidgets Component load datas</color>
+== checkout ==
+autonumber 3.1
+editCoursePopup -> courseDetailPage: navigate to courseDetailPage
+activate courseDetailPage
+courseDetailPage -> courseDetailPage : click "buy now"
+courseDetailPage -> API: POST "/v2/payment/customers/checkout" { courseId: "string" }
+courseDetailPage <- API: POST res, { url: "string" }
+courseDetailPage -> stripPaymentPage: navigate to stripPaymentPage with url
+note over stripPaymentPage
+test pay: https://docs.stripe.com/testing
+end note 
+stripPaymentPage -> stripPaymentPage: pay
+stripPaymentPage -> API: sth...
+API -> API: sth...I don't know
+API -> API: maybe insert db "pending" data in transations table
+deactivate courseDetailPage
 
-else else org
-paymentPage -> paymentPage: <color red>not ready, should be basic page path but same components </color>
+alt pay successful
+stripPaymentPage -> stripPaymentPage: success
+stripPaymentPage -> API: sth...
+API -> API: sth...I don't know
+API -> API: insert/change db "successful" data in transations table
+otherPages <- API: GET "v2/payment/transactions"
+otherPages -> otherPages: render in payment view UI
+else pay failed
+...
 end
+
+note over courseDetailPage
+<color red>TODO: logic when pay failed or succssful</color>
+end note 
 
 @enduml

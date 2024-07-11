@@ -1,3 +1,4 @@
+```plantuml
 @startuml
 title "basic logic of became teacher"
 
@@ -5,6 +6,7 @@ box "Frontend"
 participant hubPage
 participant teachingPopup
 participant stripePage
+participant teachingSpacePage
 end box
 
 box "Store & Cookie"
@@ -37,7 +39,9 @@ hubPage -> hubPage : get id from `$route.params.name`
       profileStore <- API : get `/profiles/${id}`res
       deactivate API
     note over profileStore
-      now stripeConnectOnboard = null
+      now:
+    <color green>  stripeConnectOnboard filed not return
+    <color green>  teachingSpace = null
     end note
     profileStore -> profileStore : update deatails...
     profileStore -> followersStore : update somthing..
@@ -86,24 +90,27 @@ teachingPopup -> teachingPopup: click button, becomeTeacher()
 teachingPopup -> profileStore: fill country, then becomeTeacher(country)
 note over API
 once request
-profile.type => "teacher"
-profile.stripeConnectOnboard : null => "requirement-needed"
+<color green>  profile.type => "teacher"
+<color green>  profile.stripeConnectOnboard : not return => "requirement-needed"
+<color green>  profile.teachingSpace = null
 end note
 profileStore -> API: POST `/profiles/teachers`
 profileStore <- API: post Res
 profileStore -> teachingPopup: post Res
 note over teachingPopup
-<color red>solve default behavior by browser, which will block to open new window</color>
+solve default behavior by browser, which will block to open new window
 end note
 teachingPopup -> teachingPopup: window.open(res.oboardUrl)
   teachingPopup -> stripePage: new tab in browser
   activate stripePage
   stripePage -> stripePage : signup or fill datas
   note over stripePage
-  until to the last step and fill all the required datas
-  profile.stripeConnectOnboard : "requirement-needed" => "completed"
+  until to the last step and fill all the required datas:
 
-  TODO: if not "completed", could visit from profile
+<color green>   profile.stripeConnectOnboard : "requirement-needed" => "completed"
+<color green>   profile.teachingSpace : null => "string"
+
+  TODO by profile: if not "completed", could visit from profile
   end note
   stripePage -> stripePage : each step could click to save
   stripePage -> stripePage : redirect to the our page
@@ -111,7 +118,20 @@ teachingPopup -> teachingPopup: window.open(res.oboardUrl)
   deactivate stripePage
 
 note over teachingPopup
-loop to check profile.type === "teacher"
+loop to check
+user.type === "teacher" && user.teachingSpace !== null
 end note
-teachingPopup -> teachingPopup: referesh the page, load data as a teacher
+alt loop
+teachingPopup -> authStore : getters() authStore.getInfo()
+authStore -> API : GET '/profile/me'
+authStore <- API : GET '/profile/me' getRes
+teachingPopup <- authStore : getRes
+end
+alt loop end condition1
+teachingPopup -> teachingPopup : close this popup
+else loop end condition2
+teachingPopup -> teachingPopup : when check === true
+teachingPopup -> teachingSpacePage : if getRes fit the endloop condition
+end
+
 @enduml
