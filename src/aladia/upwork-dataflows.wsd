@@ -1,0 +1,31 @@
+@startuml
+
+package Frontend {
+  usecase pages
+}
+
+package Backend {
+  usecase database
+}
+
+package Stripe {
+  usecase StripePages
+  usecase StripeAPI
+  usecase StripeDatabase
+}
+
+pages --> StripePages #line:green;text:green :  Navigate signup/checkout pages
+StripePages --> StripeDatabase #line:green;text:green : Fill data with our form opeartion
+StripeDatabase -> database #line:green;text:green : sync our database
+database --> pages #line:green;text:green : our API requests
+
+' pages --> StripeAPI #line:red;text:red : insert/update cards
+' StripeAPI --> StripeDatabase #line:red;text:red : Fill datas
+' StripeDatabase -> database #line:red;text:red : sync our database
+' database -> pages #line:red;text:red : our API requests
+
+pages <--> StripeAPI #line:blue;text:blue : get cards info
+StripeAPI <--> StripeDatabase #line:blue;text:blue : query
+
+
+@enduml
