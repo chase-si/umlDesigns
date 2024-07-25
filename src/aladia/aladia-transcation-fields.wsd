@@ -1,0 +1,90 @@
+@startuml
+title payment/transactions API details 1/2
+
+left to right direction
+
+package FrontendTable {
+  map Row1 {
+    Row1.1.1 => Type
+    Row1.1.2 => TimeStamp
+    Row1.2 => Amount
+    Row1.3 => Payment Method
+    Row1.4 => Description
+    Row1.5.1 => From
+    Row1.5.2 => To
+    Row1.6 => Status
+    Row1.7 => Transactions
+  }
+
+  map Row2 {
+    Row2.1 => payer name
+  }
+
+  map Row3 {
+    Row3.1.1 => Course image
+    Row3.1.2 => Course title
+    Row3.2 => Product amount
+    Row3.3 => Download
+    Row3.4 => Product quantity
+  }
+
+  map Row4 {
+    Row4.1 => Fee?
+  }
+}
+
+
+package BackendContainer {
+  map payerObject {
+    picture => string
+    fullName => string
+    createdAt => string
+  }
+
+  map courseObject {
+    thumbnail => { url: string }
+    title => string
+  }
+  map productsArray {
+    quantity => number
+    productId => string
+  }
+
+  map mainObject {
+    payer *--> payerObject
+    course *-> courseObject
+    type => enum string
+    amount => number
+    totalAmount => number
+    paymentCardLast4 => string
+    purpose => string
+    recipient => { picture: string }
+    status => enum string
+    id => string
+    invoiceUrl => string
+    totalFee => number
+    netAmount => number
+  }
+}
+
+' Row1
+mainObject::type --> Row1::Row1.1.1 #line:green
+payerObject::createdAt --> Row1::Row1.1.2 #line:green;text:green
+mainObject::totalAmount --> Row1::Row1.2 #line:green
+mainObject::paymentCardLast4 --> Row1::Row1.3 #line:green;text:green : only the last 4 
+mainObject::purpose --> Row1::Row1.4 #line:green
+payerObject::picture --> Row1::Row1.5.1 #line:green;text:green
+mainObject::recipient --> Row1::Row1.5.2 #line:green;text:green : picture => avatar
+mainObject::status --> Row1::Row1.6 #line:green
+mainObject::id --> Row1::Row1.7 #line:green
+
+' Row2
+' payerObject::fullName --> Row2::Row2.1 #line:blue;text:blue
+
+' ' Row3
+' courseObject::thumbnail --> Row3::Row3.1.1 #line:orange;text:orange
+' courseObject::title --> Row3::Row3.1.2 #line:orange;text:orange
+' mainObject::amount --> Row3::Row3.2 #line:orange;text:orange
+' mainObject::invoiceUrl --> Row3::Row3.3 #line:orange;text:orange
+' productsArray::quantity --> Row3::Row3.4 #line:orange;text:orange
+@enduml

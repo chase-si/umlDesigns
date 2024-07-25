@@ -1,107 +1,85 @@
 @startuml
-title payment view page
+title payment view page development doc
 legend right
   Operations:
   <color red> init </color>
-  <color orange> useUpdateStepAttr </color>
-  <color green> useGetStepAttr </color>
-  <color blue> switchFlowHooks </color>
+  <color orange> paginate </color>
+  <color green> filterQuery </color>
 end legend
 
 left to right direction
 
 package Frontend-PaymentPage {
-  usecase chartComponent
-  usecase transactionComponent
+  package chartComponent
+  package transactionComponent {
+    usecase tableHeaderFilter
+    usecase tableBody
+    usecase pagination
+  }
 }
 
 package hubPaymentStore {
   package actions {
     usecase getPaymentTransactions
-    usecase getPaymentTimeLine
-    usecase getPaymentSpending
-    usecase getPaymentIncome
-    usecase getPaymentBalance
+    usecase getPaymentTransactionsPrevNext
+    usecase getPaymentTransactionsQueryFilter
+    ' usecase getPaymentTimeLine
+    ' usecase getPaymentSpending
+    ' usecase getPaymentIncome
+    ' usecase getPaymentBalance
   }
   package state {
-    usecase StatePaymentTransactions
+    usecase v2PaymentTransactions as "
+      v2PaymentTransactions
+      ---
+      Table DataList from API
+    "
+    usecase v2PaymentTransactionsCursor as "
+      v2PaymentTransactionsCursor
+      ---
+      Cursor from API, for pagination
+    "
+    usecase v2PaymentTransactionsUsersParams as "
+      v2PaymentTransactionsUsersParams
+      ---
+      pageNumber
+      ---
+      for pagination, 'el-pagination' requires but not return from API
+    "
+    usecase v2PaymentTransactionsFilterQuery as "
+      v2PaymentTransactionsFilterQuery
+      ---
+      for queryFilter
+    "
   }
 }
 
 package Backend {
-
   usecase APITransactions as "
-  getSFC
-  ----
-  /proj/sfc
-  获取某个节点SFC数据(2层结构)
-  "
-  usecase APITimeline as "
-  postSFC or putSFC
-  ----
-  /proj/sfcs
-  获取flow数据
-  "
-  usecase APIBalance as "
-  /proj/deleteSFC
-  ----
-  /proj/sfcs
-  获取flow数据
-  "
-  usecase APISpending as "
-  post /proj/sfcs
-  ----
-  批量删除, 新建, 修改Unit, Operation, Phase节点
-  "
-  usecase APIIncome as "
-  post /proj/sfcs
-  ----
-  批量删除, 新建, 修改Unit, Operation, Phase节点
+    /payment/transactions
+    ---
+    limit next prev, filterQuery. More...
   "
 }
 
 
-' '初始渲染
-' initHooks <-- getRecipeFlow #line:ff0000;text:ff0000 : 1.1 接口获取receipe完整数据数据
-' initHooks <-- getSFC #line:ff0000;text:ff0000 : 1.2 接口获取流程图数据
-' initHooks --> ReduxRecipeFlowData #line:ff0000;text:ff0000 : 2.1 dispatch 赋值初始 ReduxActiveFlowData
-' initHooks --> ReduxActiveFlowData #line:ff0000;text:ff0000 : 2.2 dispatch 赋值初始 ReduxActiveFlowData
-' initHooks --> ReduxActiveNodeAId #line:ff0000;text:ff0000 : 2.3 dispatch 赋值初始激活点=receipe的id
-' ReduxRecipeFlowData --> 树状结构渲染 #line:ff0000;text:ff0000 : 3.1 tree数据渲染
-' ReduxActiveFlowData --> 流程图svg渲染 #line:ff0000;text:ff0000 : 3.2 流程图数据渲染
+'初始渲染
+getPaymentTransactions <--> APITransactions #line:red;text:red : 1.1 get init Data
+getPaymentTransactions --> v2PaymentTransactions #line:red;text:red : 1.2.1 save to state
+getPaymentTransactions --> v2PaymentTransactionsCursor #line:red;text:red : 1.2.2 save to state
+v2PaymentTransactions --> tableBody  #line:red;text:red : 1.3.1 render Table Data
+v2PaymentTransactionsCursor --> pagination  #line:red;text:red : 1.3.2 render pagination
+v2PaymentTransactionsFilterQuery --> tableHeaderFilter  #line:red;text:red : 1.3.3 render filterQuery
 
-' '网系节点选择渲染不同流程图
-' 单击Recipe --> switchFlowHooks #line:0000ff;text:0000ff : 1. 单击某节点引起右侧渲染不同的流程图
-' switchFlowHooks <--> getSFC #line:0000ff;text:0000ff : 2. 获取某个节点的流程图数据
-' switchFlowHooks --> ReduxActiveNodeAId #line:0000ff;text:0000ff : 3.1 ActiveNodeId 赋值
-' switchFlowHooks --> ReduxActiveFlowData #line:0000ff;text:0000ff : 3.2 ReduxActiveFlowData 赋值
-' ReduxActiveNodeAId --> 树状结构渲染 #line:0000ff;text:0000ff : 4.1 active节点渲染
-' ReduxActiveFlowData --> 流程图svg渲染 #line:0000ff;text:0000ff : 4.2 流程图数据渲染
+'分页
+pagination --> getPaymentTransactionsPrevNext #line:orange;text:orange : 2.1 get prev/next Data
+getPaymentTransactionsPrevNext --> getPaymentTransactions #line:orange;text:orange : 2.2 get set pagination Data as param
+getPaymentTransactions <--> v2PaymentTransactionsFilterQuery #line:orange;text:orange : 2.3 merge Data as param
+getPaymentTransactions <--> APITransactions #line:orange;text:orange : 2.4 get Data, rest is same as <color red>1.2, 1.3</color>
 
-' ' ' '编辑流程图
-' 流程图编辑 --> updateFlowHooks #line:purple;text:purple : 1. 调用hooks
-' updateFlowHooks --> editSFC #line:purple;text:purple : 2.1 接口更新当前svg流程图数据
-' updateFlowHooks --> batchUpdateNodes #line:purple;text:purple : 2.2 请求接口批量更新节点们
-' updateFlowHooks <-- getRecipeFlow #line:purple;text:purple : 2.3 接口返回全Recipe tree数据
-' updateFlowHooks --> ReduxRecipeFlowData #line:purple;text:purple : 3.1 dispatch ReduxRecipeFlowData
-' updateFlowHooks --> ReduxActiveFlowData #line:purple;text:purple : 3.2 dispatch ReduxActiveFlowData
-' ReduxRecipeFlowData --> 树状结构渲染 #line:purple;text:purple : 4.1 左侧树重新渲染
-' ReduxActiveFlowData --> 流程图svg渲染 #line:purple;text:purple : 4.2 流程图数据渲染
-
-' 流程图节点选择
-' SVG节点选中 --> useGetStepAttr #line:00cc00;text:00cc00 : 1.选中的节点, 调用hooks
-' useGetStepAttr <--> getStepAttr #line:00cc00;text:00cc00 : 2 请求接口
-' useGetStepAttr --> ReduxActiveNodeBId #line:00cc00;text:00cc00 : 3.1 dispatch ReduxActiveNodeBId
-' useGetStepAttr --> ReduxStepAttr #line:00cc00;text:00cc00 : 3.2 dispatch ReduxStepAttr
-' ReduxActiveNodeBId --> 流程图编辑 #line:00cc00;text:00cc00 : 4.1 允许增加顺序等操作
-' ReduxActiveNodeBId --> 左侧Tree #line:00cc00;text:00cc00 : 4.2 次节点激活
-' ReduxStepAttr --> 右侧Attr #line:00cc00;text:00cc00 : 4.3 ReduxStepAttr + ReduxActiveNodeBId 显示属性
-
-' 编辑步属性
-' 步属性 --> useUpdateStepAttr #line:orange;text:orange : 1. 保存, 调用hooks
-' useUpdateStepAttr --> editStepAttr #line:orange;text:orange : 2.1 请求接口,保存当前步属性
-' useUpdateStepAttr --> updateFlowHooks #line:orange;text:orange : 2.2 部属性要塞进流程图, 走紫色流程1以后的步骤
-
-' todo 预留撤销操作的存储
-' ReduxRecipeFlowData --> ReduxActiveFlowData #line:purple;text:purple : 2. 根据ReduxActiveNodeAId 重新影响 ReduxActiveFlowData
+'筛选渲染
+tableHeaderFilter --> getPaymentTransactionsQueryFilter #line:green;text:green : 3.1 set filterQuery Data
+getPaymentTransactionsQueryFilter --> v2PaymentTransactionsUsersParams #line:green;text:green : 3.2 reset to default value, pageNumber => 1
+getPaymentTransactionsQueryFilter --> getPaymentTransactions #line:green;text:green : 3.3 get Data with Query as param
+getPaymentTransactions --> APITransactions #line:green;text:green : 3.4 get Data, rest is same as <color red>1.2, 1.3</color>
 @enduml
