@@ -1,0 +1,17 @@
+@startuml
+start
+:click 'buy now' on course page;
+:show 'checkout dialog';
+if (selected saved card) then (yes)
+  :click 'buy now' in dialog;
+  :go to checkout session directly;
+  :show the default payment method;
+else (no)
+  :fill new card details;
+  :click 'buy now' in dialog;
+  :await '/payment/customers/payment-methods' with set as default;
+  :go to checkout session;
+  :show the new card as default payment method;
+endif
+end
+@enduml

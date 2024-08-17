@@ -1,90 +1,94 @@
 @startuml
-title payment/transactions API details 1/2
+title payment/transactions API details
 
 left to right direction
 
 package FrontendTable {
-  map Row1 {
-    Row1.1.1 => Type
-    Row1.1.2 => TimeStamp
-    Row1.2 => Amount
-    Row1.3 => Payment Method
-    Row1.4 => Description
-    Row1.5.1 => From
-    Row1.5.2 => To
-    Row1.6 => Status
-    Row1.7 => Transactions
+  map Row1 {    
+    Row1.1 => Product
+    Row1.2 => Type
+    Row1.3 => Amount
+    Row1.4 => Quantity
+    Row1.5 => Payment Method
+    Row1.6 => Description
+    Row1.7 => Buyer
+    Row1.8 => Supplier
+    Row1.9 => status
+    Row1.10 => Occurred on
+    Row1.11 => Transaction ID
+    Row1.12 => options for Download
   }
 
-  map Row2 {
-    Row2.1 => payer name
-  }
+  map expandRowsForIncoming {
+    Row2.1 => Exchanged amount
+    Row2.2 => Marketplace fee
+    Row2.3 => Net
+  } 
+}
 
-  map Row3 {
-    Row3.1.1 => Course image
-    Row3.1.2 => Course title
-    Row3.2 => Product amount
-    Row3.3 => Download
-    Row3.4 => Product quantity
-  }
-
-  map Row4 {
-    Row4.1 => Fee?
+package FrontendPopup {
+  map ProductPopup {
+    Row1.1 => ProductDate
+    Row1.2 => Course Type
+    Row2 => Course Cover
+    Row3.1 => Owner avatar
+    Row3.2 => Owner name
+    Row3.3 => Course title
+    Row4.1 => Quantity
+    Row4.2 => Unit Amount
+    Row4.3 => Amount
+    Row4.4 => Amount exchaged
+    Row4.5 => Marketplace fee
+    Row4.6 => Net
+    Row 5 => Transactions type
   }
 }
 
-
 package BackendContainer {
-  map payerObject {
-    picture => string
-    fullName => string
-    createdAt => string
-  }
-
-  map courseObject {
-    thumbnail => { url: string }
-    title => string
-  }
-  map productsArray {
-    quantity => number
-    productId => string
+  map incomingObject {
+    currency => string
+    totalAmount => number
+    totalFee => number
+    applicationFee => number
+    stipeFee => number
+    netAmount => number
+    feeInvoiceUrl  => number
+    exchangeRate => number
   }
 
   map mainObject {
-    payer *--> payerObject
-    course *-> courseObject
+    incomeDetails *-> incomingObject
+    course => { thumbnail: string, title: string }
     type => enum string
     amount => number
-    totalAmount => number
+    products => [{ quantity: number, productId: string }]
     paymentCardLast4 => string
     purpose => string
-    recipient => { picture: string }
+    payer => picture: string, fullname: string }
+    recipient => { picture: string, fullname: string }
     status => enum string
+    createdAt => string
     id => string
     invoiceUrl => string
-    totalFee => number
-    netAmount => number
   }
 }
 
-' Row1
-mainObject::type --> Row1::Row1.1.1 #line:green
-payerObject::createdAt --> Row1::Row1.1.2 #line:green;text:green
-mainObject::totalAmount --> Row1::Row1.2 #line:green
-mainObject::paymentCardLast4 --> Row1::Row1.3 #line:green;text:green : only the last 4 
-mainObject::purpose --> Row1::Row1.4 #line:green
-payerObject::picture --> Row1::Row1.5.1 #line:green;text:green
-mainObject::recipient --> Row1::Row1.5.2 #line:green;text:green : picture => avatar
-mainObject::status --> Row1::Row1.6 #line:green
-mainObject::id --> Row1::Row1.7 #line:green
+' Table Row1
+mainObject::course --> Row1::Row1.1 #line:green;
+mainObject::type --> Row1::Row1.2 #line:green;
+mainObject::amount --> Row1::Row1.3 #line:green;
+mainObject::products --> Row1::Row1.4 #line:green;
+mainObject::paymentCardLast4 --> Row1::Row1.5 #line:green;
+mainObject::purpose --> Row1::Row1.6 #line:green;
+mainObject::payer ---> Row1::Row1.7 #line:green;
+mainObject::recipient --> Row1::Row1.8 #line:green;
+mainObject::status --> Row1::Row1.9 #line:green;
+mainObject::createdAt --> Row1::Row1.10 #line:green;
+mainObject::id --> Row1::Row1.11 #line:green;
+mainObject::invoiceUrl --> Row1::Row1.12 #line:green;
 
-' Row2
-' payerObject::fullName --> Row2::Row2.1 #line:blue;text:blue
 
-' ' Row3
-' courseObject::thumbnail --> Row3::Row3.1.1 #line:orange;text:orange
-' courseObject::title --> Row3::Row3.1.2 #line:orange;text:orange
-' mainObject::amount --> Row3::Row3.2 #line:orange;text:orange
-' mainObject::invoiceUrl --> Row3::Row3.3 #line:orange;text:orange
-' productsArray::quantity --> Row3::Row3.4 #line:orange;text:orange
+' ProductPopup
+mainObject::createdAt --> ProductPopup::Row1.1 #line:blue;
+
 @enduml

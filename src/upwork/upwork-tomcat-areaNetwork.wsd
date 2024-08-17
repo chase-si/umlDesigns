@@ -5,31 +5,39 @@ header <color blue> Blue: basic connection</color> \n <color red> Red: opeartion
 left to right direction
 
 package AppElectron {
-  
   package Frontend {
-    usecase FrontendA as "
-      FrontendA(UI page)
+    usecase HomePage as "
+      Frontend HomePage
       --
-      Manage Tomcat IPs
+      app load homepage
+      --
+      project: electron
     "
-    usecase FrontendB as "
-      FrontendB(UI page)
+    usecase SetIPPage as "
+      Frontend SetIPPage
       --
-      Load Tomcat UI pages
-      (our current website page)
+      popup from menu
+      --
+      project: electron/out,
+      build from project: electron-react
     "
   }
 
-  usecase BackendE as "
-    Backend?
+  usecase FrontendDB as "
+    FrontendDB
     --
-    Database inside
+    localstroage
   "
 }
 
 package NetworArea {
   package ServicePCA {
-    usecase TomcatA
+    usecase TomcatA as "
+      TomcatA
+      --
+      project: apache-tomcat-8.5.100
+      project frontend: build from react
+    "
   }
 
   package ServicePCB {
@@ -41,15 +49,15 @@ package NetworArea {
   }
 }
 
-FrontendA <--> BackendE#line:blue;text:blue :  http://localhost
+SetIPPage <--> FrontendDB#line:blue;text:blue : save and load IP
 TomcatA ---> AppElectron#line:blue;text:blue : http://192.*.1
 TomcatB ---> AppElectron#line:blue;text:blue : http://192.*.2
 TomcatMore ---> AppElectron#line:blue;text:blue : http://192.*.more
 
-FrontendA --> FrontendA#line:red;text:red : 1.select ip A to visit
-FrontendA --> FrontendB#line:red;text:red : 2.navigate to FrontendB
-FrontendB --> TomcatA#line:red;text:red : 3.visit http://192.*.1
-FrontendB <-- TomcatA#line:red;text:red : 4.load TomcatA page in FrontendB
+HomePage --> HomePage#line:red;text:red : 1.select menu to show
+HomePage --> SetIPPage#line:red;text:red : 2.popup to show to SetIPPage
+SetIPPage --> TomcatA#line:red;text:red : 3.edit and select to visit http://192.*.1
+HomePage <-- TomcatA#line:red;text:red : 4.load TomcatA page in FrontendB
 
 
 @enduml
