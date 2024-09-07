@@ -1,0 +1,51 @@
+@startuml
+title "checkout dialog develop document"
+
+box "Frontend"
+participant checkoutLoading
+participant checkoutDialog
+participant notificationModule
+end box
+
+
+box "Backend"
+participant Service
+end box
+
+box "Stripe"
+participant API
+participant webHooks
+end box
+
+' == our plan ==
+autonumber
+checkoutDialog -> checkoutDialog : click Buy now button
+checkoutDialog -> checkoutLoading : show loading
+checkoutDialog -> Service : /v2/payment/customers/checkout
+Service -> API : Stripe checkout API
+Service <- API : Stripe checkout API response
+checkoutDialog <- Service : /v2/payment/customers/checkout response
+checkoutDialog -> notificationModule : addListener about `course-member-added`
+checkoutDialog -> checkoutDialog : set a timeout clock for 15s at the same time
+
+Service <- webHooks : stripe checkout callback
+notificationModule <- Service : payment notification
+checkoutDialog <- notificationModule : payment notification
+checkoutDialog -> checkoutDialog : or the clock timeout
+checkoutDialog <-> Service: /v2/courses/${id}, sync the newest course status
+checkoutDialog -> checkoutLoading : hide loading, \n hide checkout dialog, \n show pay result
+autonumber stop
+
+' == can we do this? ==
+' autonumber
+' checkoutDialog -> checkoutDialog : click Buy now button
+' checkoutDialog -> checkoutLoading : show loading
+' checkoutDialog -> Service : /v2/payment/customers/checkout
+' Service -> API : Stripe checkout API
+' Service <-> webHooks : await here, to get stripe checkout callback or timeout
+' Service <- API : Stripe checkout API response
+' checkoutDialog <- Service : /v2/payment/customers/checkout response
+' checkoutDialog <-> Service: /v2/courses/${id}, sync the newest course status
+' checkoutDialog -> checkoutLoading : hide loading, show pay result
+' autonumber stop
+@enduml

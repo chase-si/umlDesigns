@@ -22,43 +22,4 @@ end note
 note over BackendModule
 require("stripe") in NodeJS
 end note
-
-autonumber
-CardComponent <- FrontendModule : initStripe(public_key)
-requestService <- BackendModule : initStripe(private_key)
-
-' == get SecretKey ==
-' autonumber 3.1
-' CardComponent -> requestService : <color red>POST "/payment/connect-accounts/verification-sessions/{id}" (fix)</color>
-' requestService -> requestService : stripe.identity.verificationSessions.create
-' requestService <--> StripeAPI : clientSecretKey
-' CardComponent <- requestService : PostRes with clientSecretKey
-
-== create card ==
-autonumber 4.1
-CardComponent -> CardComponent : stripe.elements() as Elements
-CardComponent --> StripeAPI : <color green>sync data in encryption</color>
-CardComponent -> CardComponent : elements.create('card') as CardElement
-CardComponent -> CardComponent : <color red>show the CardElement on our page (style)</color>
-
-== save card ==
-autonumber 5.1
-CardComponent -> CardComponent : edit the card form
-CardComponent --> StripeAPI : <color green>sync data in encryption</color>
-CardComponent <--> StripeAPI : <color green>automatic validation</color>
-note over CardComponent
-const { paymentMethod } = await stripe.createPaymentMethod({
-  type: 'card',
-  card: cardElement,
-});
-end note
-CardComponent -> CardComponent : createPaymentMethod to save
-CardComponent --> StripeAPI : <color green>sync data in encryption</color>
-CardComponent -> requestService : <color red>POST "/save-card" only with paymentMethod.id and customerID</color>
-note over requestService
-stripe.paymentMethods.attach
-stripe.customers.update
-end note
-requestService -> requestService : <color red>bind the card to the customer</color>
-requestService --> StripeAPI : <color green>sync data in encryption</color>
 @enduml

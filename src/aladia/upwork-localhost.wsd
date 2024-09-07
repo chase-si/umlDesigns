@@ -1,0 +1,25 @@
+@startuml
+
+package LocalAreaNetwork {
+  usecase PC as "
+    PC frontend development env
+    ---
+    IP: 192.168.0.100:3000/localhost:3000
+  "
+  usecase Mobile as "
+    Mobile
+    ---
+    IP: 192.168.0.101
+  "
+}
+
+usecase BackendAPI
+
+
+PC <--> BackendAPI #line:blue;text:blue : API requests from localhost:3000/api
+
+Mobile --> PC: 1. visit 192.168.0.100:3000
+PC --> Mobile: 2. frontend pages
+Mobile --+ BackendAPI  #line:red;text:red : 3. API requests from 192.168.0.101:3000/api/...
+
+@enduml
