@@ -1,0 +1,112 @@
+@startuml
+title payment/transactions API details
+
+left to right direction
+
+package FrontendTables {
+  usecase TransactionTable as "
+    Transaction Table
+    ---
+    todo query datas
+  "
+  usecase SubscriptionTable as "
+    Subscription Table
+    ---
+    todo query datas
+  "
+  usecase PayoutTable as "
+    PayoutTable Table
+    ---
+    todo query datas
+  "
+  usecase CustomerTalbe as "
+    CustomerTalbe Table
+    ---
+    todo query datas
+  "
+}
+
+package FrontendDialogs {
+  package TransactionDialogs {
+    package Income {
+      usecase IncomeOneTimePaymentDialog as "
+        IncomeOneTimePaymentDialog
+        ---
+        income from 'single payment'
+      "
+
+      usecase IncomeSubFeeDialog as "
+        IncomeSubFeeDialog
+        ---
+        income from 'recurring payment'
+        - subscription fee
+      "
+
+      usecase IncomeSubsDialog as "
+        IncomeSubsDialog
+        ---
+        income from 'recurring payment'
+        - subscription installment
+      "
+    }
+
+    package Spending {
+      usecase SpendingOneTimePaymentDialog as "
+        SpendingOneTimePaymentDialog
+        ---
+        Spending for 'single payment'
+      "
+
+      usecase SpendingSubFeeDialog as "
+        SpendingSubFeeDialog
+        ---
+        Spending for 'recurring payment'
+        - subscription fee
+      "
+
+      usecase SpendingSubsDialog as "
+        SpendingSubsDialog
+        ---
+        Spending for 'recurring payment'
+        - subscription installment
+      "
+    }
+  }
+
+  package SubscriptionDialogs {
+    usecase SubscriptionIncomeDialog as "
+      SubscriptionIncomeDialog
+      ---
+      dialog for subscription income 
+    "
+
+    usecase SubscriptionSpendingDialog as "
+      SubscriptionSpendingDialog
+      ---
+      dialog for subscription speding 
+    "
+  }
+
+
+  usecase PayoutDialog as "
+    PayoutDialog
+    ---
+    dialog for payout
+  "
+
+  usecase CustomerDialog as "
+    CustomerDialog
+    ---
+    ???
+  "
+}
+
+
+PayoutTable --> PayoutDialog: click row
+CustomerTalbe --> CustomerDialog: click row
+SubscriptionTable --> SubscriptionDialogs: click row
+TransactionTable --> TransactionDialogs: click row
+
+
+
+@enduml

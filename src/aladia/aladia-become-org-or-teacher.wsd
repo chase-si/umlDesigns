@@ -1,0 +1,71 @@
+@startuml
+title "basic logic of became teacher or organization"
+
+box "Frontend"
+participant teacherCom as "teachingPopup or profilePopup"
+participant orgCom as "create new Organization page or else..."
+participant StripePage
+end box
+
+box "Backend"
+participant API
+participant webSocket
+end box
+
+== become a teacher ==
+autonumber 1.1
+teacherCom <- API: `v2/profiles/me`
+activate teacherCom
+note over teacherCom
+signup condition:
+<color green>  stripeConnectOnboard = null
+<color green>  teachingSpace = null
+<color green>  type = "user"
+end note
+teacherCom -> teacherCom: select country
+teacherCom -> API: POST `v2/profiles/teachers`
+note over API
+once request
+<color green>  type => "teacher"
+<color green>  stripeConnectOnboard : null => "requirement-needed"
+<color green>  teachingSpace = null
+end note
+teacherCom <- API: onboardUrl
+teacherCom -> StripePage: visit onboardUrl on new tab
+teacherCom <-> webSocket: listen to the `notification` event `become-teacher`
+
+StripePage -> StripePage: finish all the required datas
+note over API
+  until to the last step and fill all the required datas:
+  <color green>   stripeConnectOnboard : "requirement-needed" => "completed"
+  <color green>   teachingSpace : null => "string"
+end note
+StripePage -> StripePage: redirect to the our page, tab will close itself
+StripePage -> webSocket: BE webhooks
+webSocket -> teacherCom: get event, refresh the page or re-get the endpoint to update FE UI
+deactivate teacherCom
+
+
+== become an organization ==
+autonumber 2.1
+orgCom <- API: `v2/profiles/me` ???
+activate orgCom
+note over orgCom
+<color red> signup condition?
+end note
+orgCom -> orgCom: fill informations?
+orgCom -> API: `v2/orignizations`
+orgCom <- API: onboardUrl
+orgCom -> StripePage: visit onboardUrl on new tab
+orgCom <-> webSocket: listen to the `notification` event `???`
+
+StripePage -> StripePage: finish all the required datas
+note over API
+  until to the last step and fill all the required datas:
+  <color red>   finish signup flag???
+end note
+StripePage -> StripePage: redirect to the our page, tab will close itself
+StripePage -> webSocket: BE webhooks
+webSocket -> orgCom: get event, refresh the page or re-get the endpoint to update FE UI
+deactivate orgCom
+@enduml

@@ -17,7 +17,7 @@ package FrontendTable {
     Row1.10 => Occurred on
     Row1.11 => Transaction ID
     Row1.12 => options for Download
-  }
+  } 
 
   map expandRowsForIncoming {
     Row2.1 => Exchanged amount

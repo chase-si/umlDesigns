@@ -1,0 +1,42 @@
+@startuml
+title Systems Architecture
+' header <color blue> Blue: basic connection</color> \n <color red> Red: opeartion flow</color>
+
+left to right direction
+
+package NetworArea {
+  useCase AppElectron
+
+  useCase MainService as "
+    MainService
+    ---
+    with a fixed IP
+  "
+
+  package SOC_A {
+    usecase TomcatA_FE
+    usecase TomcatA_BE
+  }
+
+  package SOC_B {
+    usecase TomcatB_FE
+    usecase TomcatB_BE
+  }
+
+  package SOC_C {
+    usecase TomcatC_FE
+    usecase TomcatC_BE
+  }
+}
+
+TomcatA_FE <-> TomcatA_BE: localhostHTTP
+TomcatB_FE <-> TomcatB_BE: localhostHTTP
+TomcatC_FE <-> TomcatC_BE: localhostHTTP
+
+TomcatA_FE --> MainService: click save, also post data to
+TomcatB_FE --> MainService: click save, also post data to
+TomcatC_FE --> MainService: click save, also post data to
+
+AppElectron <-- MainService: get data
+
+@enduml
