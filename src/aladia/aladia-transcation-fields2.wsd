@@ -1,0 +1,67 @@
+@startuml
+title transactions API details
+
+left to right direction
+
+package Spending {
+  package SpendingTrans {
+    map SpendingTransMap {    
+      Row1 => totalAmount
+      Row2 => unitAmount
+      Row3 => amount
+      Row4 => course.billing
+    }
+
+    usecase SpendingOnetimePayment
+
+    usecase SpendingSubscriptionFee
+
+    usecase SpendingRucrringPayment
+  }
+
+  package SpendingSubs {
+    map SpendingSubMap {
+      Row1 => futureInstallments
+      Row2 => feeTransaction
+      Row3 => recurringTransactions
+      Row4 => course.billing
+    } 
+  }
+}
+
+package Income {
+  package IncomeTrans {
+    map incomeDetailMap {
+      Row1 => applicationFee
+      Row2 => currency
+      Row3 => exchangeRate
+      Row4 => netAmount
+      Row5 => stripeFee
+      Row6 => currency
+      Row7 => totalAmount
+      Row8 => totalFee
+    }
+
+    map IncomeTransMap {    
+      Row1 => totalAmount
+      Row2 => amount
+      Row3 => unitAmount
+      Row4 *-> incomeDetailMap
+    } 
+  }
+
+  package IncomeSubs {
+    usecase similarAsSpendingSubs as "
+      similarAsSpendingSubs
+      ----
+      IncomeOnetimePayment
+      IncomeSubscriptionFee
+      IncomeRucrringPayment
+    "
+  }
+}
+
+SpendingSubscriptionFee => SpendingSubs
+SpendingRucrringPayment => SpendingSubs
+
+@enduml

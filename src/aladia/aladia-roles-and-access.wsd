@@ -1,0 +1,73 @@
+@startuml
+title "Roles and Permissions"
+
+left to right direction
+
+
+package UserA {
+  package ProfileA {
+    usecase studentRole as "
+      role = student/teacher
+    "
+  }
+
+  package OrgA1 {
+    package SpaceA1_A {
+      usecase CourseA as "
+        buy CourseA * 5
+      "
+    }
+  }
+
+  package OrgA2 {
+
+  }
+}
+
+' package Roles {
+'   usecase studentRole as "
+'     student
+'     ---
+'     sign up, a basic user
+'   "
+
+'   usecase teacherRole as "
+'     teacher
+'   "
+
+'   usecase orginizationRole as "
+'     orginization
+'   "
+' }
+
+' package Permissions {
+'   usecase buyOne as "
+'     buy one license of a course
+'   "
+
+'   usecase teacherP as "
+'     teacher
+'     ---
+'     1. create spaces; 
+'     2. invite user to his course;
+'     3. invite user to his spaces;
+'   "
+
+'   usecase buyMore as "
+'     buy one more licenses of a course
+'     ---
+'     1. buy more licenses;
+'     2. give licenses to his members;
+'   "
+' }
+
+' studentRole --> buyOne
+' teacherRole --> buyOne
+' teacherRole --> teacherP
+' teacherRole --+ buyMore
+' orginizationRole --> buyMore
+
+' studentRole -> teacherRole : finish sign up on stripe
+' teacherRole -> orginizationRole : TODO...
+
+@enduml

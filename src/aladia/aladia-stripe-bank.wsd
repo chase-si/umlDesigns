@@ -1,0 +1,86 @@
+@startuml
+title "create card with payment Element in stripe"
+legend right
+  Tips:
+  <color green>Green: </color>
+  <color green>Sync data with Stripe in encryption.</color>
+  <color green>For this part, we just follow the StripeAPI, and invisiable to us. </color>
+
+  <color blue>Blue: </color>
+  <color blue>APIs of our backend.</color>
+end legend
+
+box "Frontend"
+participant CardComponent
+end box
+
+box "Backend"
+participant requestService
+end box
+
+box Stripe
+participant FrontendModule
+participant BackendModule
+participant StripeAPI
+end box
+
+note over FrontendModule
+@stripe/stripe-js
+end note
+note over BackendModule
+require("stripe") in NodeJS
+end note
+
+autonumber
+CardComponent <- FrontendModule : initStripe(public_key, (language))
+requestService <- BackendModule : initStripe(private_key)
+
+== create card ==
+autonumber 3.1
+CardComponent -> requestService: <color blue>/paymeng/customers/setup-intent
+note over requestService
+const setupIntent = await stripe.setupIntents.create({
+  customer: customerId,
+  payment_method_types: ['card'],
+});
+end note
+requestService <-> StripeAPI: get client_secret
+requestService --> StripeAPI : <color green>sync data in encryption</color>
+CardComponent <- requestService: clientSecret
+autonumber 4.1
+note over CardComponent
+// custome styles here ↓
+const elements = stripe.elements({ clientSecret });
+const paymentElement = elements.create('payment');
+end note
+CardComponent -> CardComponent : create PaymentElement
+CardComponent --> StripeAPI : <color green>sync data in encryption</color>
+CardComponent -> CardComponent : render PaymentElement on the page
+
+== edit/save card ==
+autonumber 5.1
+CardComponent -> CardComponent : edit the card form
+CardComponent --> StripeAPI : <color green>sync data in encryption</color>
+CardComponent <--> StripeAPI : <color green>automatic validation</color>
+autonumber 6.1
+note over CardComponent
+const confirmRes = await stripe.confirmSetup({
+  elements: elements,
+  redirect: 'if_required',
+});
+end note
+CardComponent -> StripeAPI : confirmSetup to save
+CardComponent <--> StripeAPI : <color green>sync data in encryption</color>
+CardComponent -> requestService : <color blue>/payment/customers/payment-methods (confirmRes.id)
+note over requestService
+sync data in our db, something else...
+end note
+requestService -> requestService : backend operations
+requestService <--> StripeAPI : <color green>sync data</color>
+CardComponent <- requestService : success message
+
+autonumber 7.1
+CardComponent -> CardComponent : close add dialog, jump to list page
+CardComponent <-> requestService : <color blue>get /payment/customers
+CardComponent -> CardComponent : render Card lists
+@enduml

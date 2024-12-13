@@ -1,0 +1,50 @@
+@startuml
+title "document for using checkout"
+
+box "frontend"
+participant paymentCheckout
+participant pages
+end box
+
+box "paymentStore"
+participant onCheckout
+participant setCurrentBuyCourse
+participant otherFunctions
+end box
+
+box "APIs"
+participant backendAPI
+participant stripeAPI
+end box
+
+
+autonumber
+activate onCheckout
+pages -> onCheckout : <color blue>paymentStore.onCheckout(id, fromFlag)</color>
+onCheckout -> onCheckout: judge log in? || return warning
+onCheckout <-> backendAPI: GET getCourse Detail
+onCheckout -> onCheckout: judge own course? || return warning
+onCheckout -> onCheckout: free course? || free checkout
+deactivate onCheckout
+
+activate setCurrentBuyCourse
+onCheckout -> setCurrentBuyCourse: paymentStore.setCurrentBuyCourse(courseObj, fromFlag)
+setCurrentBuyCourse -> setCurrentBuyCourse: currentCourseObject = courseObj
+setCurrentBuyCourse -> setCurrentBuyCourse: fromFlag = fromFlag
+setCurrentBuyCourse -> paymentCheckout: checkout Dialog Show
+deactivate setCurrentBuyCourse
+
+
+activate paymentCheckout
+paymentCheckout -> paymentCheckout: its own Child Components logic
+paymentCheckout -> otherFunctions: checkout
+otherFunctions <-> stripeAPI: set and pay with Stripe components
+otherFunctions <-> backendAPI: checkout API
+paymentCheckout <- otherFunctions: success or failed
+
+paymentCheckout -> paymentCheckout: <color blue>handle the purchased callback</color>
+paymentCheckout -> paymentCheckout: in paymentCheckout/index.vue <color blue>onPurchased</color>
+paymentCheckout -> pages: refresh/route.push/or something
+deactivate paymentCheckout
+
+
