@@ -1,0 +1,39 @@
+@startuml
+title "time picker"
+
+participant "FrontendTimeZone +6 timezone" as Frontend1
+participant "FrontendTimeZone -6 timezone" as Frontend2
+participant Backend
+
+note over Frontend1
+Local time: Dec 13 - 06:30:00 => Dec 13
+end note
+
+note over Frontend2
+Local time: Dec 12 - 18:30:00 => Dec 12
+end note
+autonumber
+
+== Now: UTC Dec 13 - 00:30:00 ==
+== Create course ==
+
+Frontend1 -> Frontend1: User at <color red>Timezone +6</color>, selects time Dec 13,
+Frontend1 -> Frontend1: Set time as <color red>UTC Dec-13 00:00:00 </color>
+Frontend1 -> Backend: Send the time to the backend
+Backend -> Backend: Store the time in the database <color red>UTC Dec-13 00:00:00 </color>
+
+
+== Frontend1 (+6 timezone) Buy course ==
+Frontend1 -> Frontend1: the couse Begin at <color red>UTC Dec-13 00:00:00 </color>
+Frontend1 -> Frontend1: render as localTime: <color red> Dec 13 - 06:00:00 => today is Dec 13 </color>
+Frontend1 -> Backend: Try to buy
+Backend -> Backend: 13 === 13, 400 error.
+Frontend1 <- Backend: <color green>I can't buy today course, that's expected</color>
+
+== Frontend2 (-6 timezone) Buy course ==
+Frontend2 -> Frontend2: the couse Begin at <color red>UTC Dec-13 00:00:00 </color>
+Frontend2 -> Frontend2: render as localTime: <color red> Dec 12 - 18:00:00 => today is Dec 12 </color>
+Frontend2 -> Backend: Try to buy
+Backend -> Backend: 13 === 13, 400 error
+Frontend2 -> Frontend2: <color blue>It's tomorrow course, why I can't buy it?</color>
+@enduml

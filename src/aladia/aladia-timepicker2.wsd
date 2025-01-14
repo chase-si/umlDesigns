@@ -1,0 +1,56 @@
+@startuml
+title "time picker for course start time"
+
+box Frontend
+participant "Teacher GMT +1(Italy) \n Dec-18 8:30:00" as FrontendA
+participant "StudentA GMT +1(Italy) \n Dec-18 8:30:00" as FrontendB
+participant "StudentB GMT +8(China) \n Dec-18 15:30:00" as FrontendC
+participant "StudentC GMT -8(USA_LA) \n Dec-17 23:30:00" as FrontendD
+end box
+
+participant Backend
+participant "API" as API
+
+== Now: UTC Dec-18 07:30:00 ==
+== Create Course ==
+autonumber
+FrontendA -> FrontendA: Teacher create course start at localTime today \n <color red>Dec-18 00:00:00</color>
+FrontendA -> FrontendA: transform to UTC time <color red>UTC Dec-17 23:00:00</color>
+FrontendA -> Backend: Send the time to the backend <color red>UTC Dec-17 23:00:00</color>
+Backend -> Backend: Store the start time in the database \n <color red>UTC Dec-17 23:00:00</color>
+Backend -> FrontendA: Teacher get date to render to preview \n <color red>UTC Dec-17 23:00:00</color>
+FrontendA -> FrontendA: render as localTime: <color red>Dec-18 00:00:00</color>
+
+== API call directly ==
+API -> Backend: call backend directly
+note over Backend
+Compared the current time and the course start time,
+to minutes level:
+<color red>new Date()</color> and <color red>UTC Dec-17 23:00:00</color>
+<color green>Never could buy the course which has already started</color>
+endnote
+Backend -> API: 403 error or something
+
+== Same timezone user ==
+FrontendB -> FrontendB: User at <color red>GMT +1</color>, localtime, today is <color red> Dec-18 8:30:00</color>,
+FrontendB <-> Backend: Get the course start time <color red>UTC Dec-17 23:00:00</color> to render
+FrontendB -> FrontendB: <color red>UTC Dec-17 23:00:00</color> => \n course start at localtime <color red>Dec-18 00:00:00</color>, today is <color red>Dec-18</color>
+FrontendB -> FrontendB: Compare local today from <color red>Dec-18 00:00:00</color> with <color red>Dec-18</color>
+FrontendB -> FrontendB: 18 === 18, warning from FE <color green>could not buy today course</color>
+
+== Different timezone Case1, earlier than the teacher's timezone ==
+FrontendC -> FrontendC: User at <color red>GMT +8</color>, localtime, today is <color red> Dec-18 15:30:00</color>,
+FrontendC <-> Backend: Get the course start time <color red>UTC Dec-17 23:00:00</color> to render
+FrontendC -> FrontendC: <color red>UTC Dec-17 23:00:00</color> => \n course start at localtime <color red>Dec-18 07:00:00</color>, today is <color red>Dec-18</color>
+FrontendC -> FrontendC: Compare local today from <color red>Dec-18 00:00:00</color> with <color red>Dec-18</color>
+FrontendC -> FrontendC: 18 === 18, warning from FE <color green>could not buy today course</color>
+
+== Different timezone Case2, later than the teacher's timezone ==
+FrontendD -> FrontendD: User at <color red>GMT -8</color>, localtime, today is <color red> Dec-17 23:30:00</color>,
+FrontendD <-> Backend: Get the course start time <color red>UTC Dec-17 23:00:00</color> to render
+FrontendD -> FrontendD: <color red>UTC Dec-17 23:00:00</color> => \n course start at localtime <color red>Dec-17 15:00:00</color>, today is <color red>Dec-17</color>
+FrontendD -> FrontendD: Compare local today from <color red>Dec-17 15:00:00</color> with <color red>Dec-17</color>
+FrontendD -> FrontendD: 17 === 17, warning from FE <color green>could not buy today course</color>
+
+
+@enduml

@@ -1,0 +1,105 @@
+@startuml
+title "add card to checkout session in stripe"
+legend right
+  Tips: ...
+end legend
+
+box "Frontend"
+participant CheckoutDialog
+end box
+
+box "Backend"
+participant requestService
+end box
+
+box Stripe
+participant StripeAPI
+end box
+
+note over CheckoutDialog
+Frontend: 
+
+@stripe/stripe-js
+{ betas: ['custom_checkout_beta_5'] },
+end note
+note over requestService
+Backend: 
+
+require("stripe") in NodeJS
+apiVersion: '2024-12-18.acacia; custom_checkout_beta=v1',
+end note
+
+autonumber
+CheckoutDialog <-> StripeAPI : initStripe(public_key, {locale, betas}))
+requestService <-> StripeAPI : initStripe(private_key, {apiVersion})
+
+== init payment element ==
+note over CheckoutDialog
+courseID/cyclesID => line_items.priceID
+qutantity => line_items.quantity
+token => customerID
+returnURL => return_url
+end note
+CheckoutDialog -> requestService: <color blue>/payment/checkout-sessions-create
+note over requestService
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: priceID, quantity: quantity }],
+  payment_method_types: ['card'],
+  customer: customerId,
+  mode: 'payment',
+  ui_mode: 'custom',
+  saved_payment_method_options: {
+    payment_method_save: 'enabled', // ==> allow the FE to save the card
+  },
+  return_url: 'http://url?<color red>session_id={CHECKOUT_SESSION_ID}</color>',
+  ...
+});
+end note
+requestService <-> StripeAPI: get client_secret
+requestService -> CheckoutDialog: get checkoutSession
+note over CheckoutDialog
+const checkout = await stripe.initCheckout({
+  clientSecret: checkoutSession.session.client_secret
+});
+
+// custome styles here ↓
+const paymentElement = checkoutSession.createElement('payment', {...});
+paymentElement.mount('#payment-element');
+end note
+CheckoutDialog <-> StripeAPI: render the payment Element
+
+== checkout click==
+autonumber 1
+CheckoutDialog -> StripeAPI: submit the payment
+note over CheckoutDialog
+const confirmRes = await checkout.confirm({
+  savePaymentMethod, // savePaymentMethod: boolean
+  redirect: 'if_required', // avoid unnecessary redirect
+});
+if (confirmRes.error) {
+  // handle error to show
+}
+
+// <color red> if redirection, no this, check the step 8 </color>
+if (confirmRes.success) {
+  // check the step 8
+}
+end note
+CheckoutDialog <- StripeAPI: await res or redirect to return_url
+alt if redirect
+  CheckoutDialog -> requestService: <color blue>/payment/retrieve-session with sessionID in URL
+  requestService -> requestService: <color red>sync the DB, in case checkout result earlier than the webhook
+  note over requestService
+    const session = await stripe.checkout.sessions.retrieve(
+      sessionId
+    );
+  end note
+  requestService -> StripeAPI: get checkoutSession
+  requestService <- StripeAPI: return checkoutSession
+  CheckoutDialog <- requestService: render by checkoutSession status from BE
+else else await res
+  CheckoutDialog -> requestService: <color blue>/payment/retrieve-session with id in confirmRes</color>
+  requestService -> requestService: <color red>sync the DB, in case checkout result earlier than the webhook
+  CheckoutDialog <- requestService: render by checkoutSession status from BE
+end
+@enduml

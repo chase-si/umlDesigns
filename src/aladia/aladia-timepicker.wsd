@@ -6,7 +6,6 @@ participant OtherFrontends
 
 
 participant Backend
-
 autonumber
 Frontend -> Frontend: User at <color red>Timezone +1</color>, selects time Dec 13,
 Frontend -> Frontend: Since we only to the day level, set the time to \n <color red> localtime: Dec 13 - 00:00:00</color>

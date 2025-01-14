@@ -1,0 +1,43 @@
+@startuml
+title "payment page dialog navgations"
+
+box Components
+participant Table
+participant DialogContainer
+participant DialogNavTitle
+participant DialogType1
+participant DialogType2
+end box
+
+participant HubPaymentStore
+
+== open from table row click ==
+autonumber
+Table -> Table: click row
+Table -> Table: detailDialogOpen => true
+Table -> DialogContainer: show dialog
+Table -> HubPaymentStore: push row Item => dialogNavHistory[]
+DialogContainer <- HubPaymentStore: watch dialogNavHistory[] to get the last item
+DialogContainer -> DialogNavTitle: render the navTitle(a public function?)
+DialogContainer -> DialogType1: render the dialog by types
+autonumber stop
+
+== navigations to new one ==
+autonumber
+DialogType1 -> DialogType1: click other dialog
+DialogType1 -> DialogType1: loading to await the new data as item
+DialogType1 -> HubPaymentStore: push new Item => dialogNavHistory[]
+DialogContainer <- HubPaymentStore: watch dialogNavHistory[] to get the last item
+DialogContainer -> DialogContainer: adding opeation => slide right ?
+DialogContainer -> DialogNavTitle: render the navTitle(a public function?)
+DialogContainer -> DialogType2: render the dialog by types
+
+== navigations back to previous one ==
+autonumber
+DialogType2 -> DialogType2: click back or request the data that is already in dialogNavHistory[]
+DialogType2 -> HubPaymentStore: delete Item for DialogType2 => dialogNavHistory[]
+DialogContainer <- HubPaymentStore: watch dialogNavHistory[] to get the last item
+DialogContainer -> DialogContainer: deleting opeation => slide left ?
+DialogContainer -> DialogNavTitle: render the navTitle(a public function?)
+DialogContainer -> DialogType1: render the dialog by types
+@enduml

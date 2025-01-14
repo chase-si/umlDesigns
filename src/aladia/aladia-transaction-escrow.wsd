@@ -1,0 +1,45 @@
+@startuml
+title "Escrow"
+
+box FrontEnd
+participant Transaction
+participant Balance
+end box
+
+participant Backend
+
+' participant UserPaymentCard
+
+box Stripe
+participant API
+participant AladiaAccount
+participant SupplierAccount
+end box
+
+autonumber
+Transaction -> Transaction: user buy course
+Transaction <-> API: Checkout Embedded Component
+Transaction -> Backend: checkout endpoint
+Backend -> API: checkout
+API <-> AladiaAccount: Transfer from: \n User Payment Card => AladiaAccount
+Backend <- API: checkout
+Transaction <- Backend: Transaction Status: <color green>Successful</color>
+Backend -> Backend: Hold the funds Or Plan to release
+Backend -> API: Transfer from: \n AladiaAccount => SupplierAccount
+API -> AladiaAccount
+AladiaAccount -> SupplierAccount
+note over Backend
+It's actually from
+`Total balance/Future payouts/In transit to bank`
+of this Stripe Transfer.
+
+(Referring to Balance Embedded Component) 
+
+And maybe add a `Release Begin Date` => controlled by our BE.
+end note
+Backend <- API: Schedule
+Backend -> Transaction: Show the <color green>Escrow Schedule</color>
+
+Backend -> Backend: Sum the Transaction Escrow to Total Escrow
+Backend -> Balance: Show the <color green>Total Escrow</color>
+@enduml
