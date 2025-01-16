@@ -14,6 +14,7 @@ end box
 
 box Stripe
 participant StripeAPI
+participant Webhooks
 end box
 
 note over CheckoutDialog
@@ -35,10 +36,12 @@ requestService <-> StripeAPI : initStripe(private_key, {apiVersion})
 
 == init payment element ==
 note over CheckoutDialog
-courseID/cyclesID => line_items.priceID
-qutantity => line_items.quantity
-token => customerID
-returnURL => return_url
+post params: {
+  courseID/cyclesID => line_items.priceID
+  qutantity => line_items.quantity
+  token => customerID
+  ...
+}
 end note
 CheckoutDialog -> requestService: <color blue>/payment/checkout-sessions-create
 note over requestService
@@ -51,12 +54,13 @@ const session = await stripe.checkout.sessions.create({
   saved_payment_method_options: {
     payment_method_save: 'enabled', // ==> allow the FE to save the card
   },
-  return_url: 'http://url?<color red>session_id={CHECKOUT_SESSION_ID}</color>',
+  return_url: <color red> not set, important!!!! or it will cover the FE set!!!!
   ...
 });
+
 end note
 requestService <-> StripeAPI: get client_secret
-requestService -> CheckoutDialog: get checkoutSession
+requestService -> CheckoutDialog: return client_secret and <color red>sessionID</color>
 note over CheckoutDialog
 const checkout = await stripe.initCheckout({
   clientSecret: checkoutSession.session.client_secret
@@ -75,31 +79,48 @@ note over CheckoutDialog
 const confirmRes = await checkout.confirm({
   savePaymentMethod, // savePaymentMethod: boolean
   redirect: 'if_required', // avoid unnecessary redirect
+  <color red>reutrnUrl: `${returnUrl}?is-default=${isDefault}&session_id=${sessionID}`, // redirect URL
 });
 if (confirmRes.error) {
   // handle error to show
 }
 
-// <color red> if redirection, no this, check the step 8 </color>
+// if redirection, no this, check the step 4.2.1
 if (confirmRes.success) {
-  // check the step 8
+  // check the step 4.2.1
 }
 end note
 CheckoutDialog <- StripeAPI: await res or redirect to return_url
+requestService <-- Webhooks: paid successful webhook(not sure timing)
 alt if redirect
-  CheckoutDialog -> requestService: <color blue>/payment/retrieve-session with sessionID in URL
-  requestService -> requestService: <color red>sync the DB, in case checkout result earlier than the webhook
+autonumber 4.1.1
   note over requestService
-    const session = await stripe.checkout.sessions.retrieve(
-      sessionId
-    );
+    sessionId => id in redirect URL as queryParam
+    isDefaultCard => is-default in redirect URL as queryParam
+
+    get/post params: { isDefaultCard: boolean}
   end note
-  requestService -> StripeAPI: get checkoutSession
-  requestService <- StripeAPI: return checkoutSession
-  CheckoutDialog <- requestService: render by checkoutSession status from BE
+  CheckoutDialog -> requestService: <color blue>/payment/transaction/checkout-sessions/:sessionId
 else else await res
-  CheckoutDialog -> requestService: <color blue>/payment/retrieve-session with id in confirmRes</color>
-  requestService -> requestService: <color red>sync the DB, in case checkout result earlier than the webhook
-  CheckoutDialog <- requestService: render by checkoutSession status from BE
+autonumber 4.2.1
+  note over requestService
+    sessionId => id in await res
+    isDefaultCard => FE already know as variable
+
+    get/post params: { isDefaultCard: boolean}
+  end note
+  CheckoutDialog -> requestService: <color blue>/payment/transaction/checkout-sessions/:sessionId</color>
 end
+
+autonumber 5
+requestService -> requestService: set as default paymentMethod
+requestService -> requestService: sync the DB, in case checkout result earlier than the webhook
+requestService -> StripeAPI: get checkoutSession
+requestService <- StripeAPI: return checkoutSession
+note over requestService
+  const session = await stripe.checkout.sessions.retrieve(
+    sessionId
+  );
+end note
+CheckoutDialog <- requestService: render by checkoutSession status from BE
 @enduml
