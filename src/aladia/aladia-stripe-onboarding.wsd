@@ -1,0 +1,116 @@
+@startuml
+title "embedded onboarding component"
+legend right
+  Tips: ...
+end legend
+
+box "Frontend"
+participant ServiceSubDialog
+participant OnboardingDialog
+end box
+
+participant Backend
+
+box Stripe
+participant ConnectJS
+participant StripeBEAPI
+end box
+
+== env ==
+autonumber 1.1
+note over ServiceSubDialog
+Frontend: 
+
+@stripe/connect-js
+end note
+ServiceSubDialog <-> ConnectJS: Frontend dependencies
+
+note over Backend
+Backend: 
+
+require("stripe") in NodeJS
+end note
+Backend <-> StripeBEAPI: Backend dependencies
+
+
+== begin onboarding ==
+autonumber 2.1
+note over ServiceSubDialog
+import { loadConnectAndInitialize } from '@stripe/connect-js';
+
+params: {
+  publishableKey =>  public_key <color red>required!</color>
+  fetchClientSecret => function to get clientSecret <color red>required!</color>
+  locale => language
+  appearance => customize UI
+}
+end note
+ServiceSubDialog <-> ServiceSubDialog : loadConnectAndInitialize
+note over ServiceSubDialog
+<color red>Our current similar request:</color>
+
+Create Account:
+Profile: /profiles/teachers
+Org:/organizations
+
+Get-session:
+/payment/connect-accounts/balance-sessions
+
+end note
+ServiceSubDialog -> Backend: /create-account & /get-session
+activate Backend
+  note over ConnectJS
+  await stripe.accounts.create(params)
+
+  params {
+    country: string,
+    type: 'custom'
+    ...
+  }
+  end note
+  Backend -> StripeBEAPI: create account
+  Backend <- StripeBEAPI: get account
+
+  note over ConnectJS
+  await stripe.accountSessions.create
+
+  params {
+    account: accountId,
+    components: {
+      account_onboarding: {
+        enabled: true,
+        features: {
+          // <color red> this needs a necessary popup by phone validation </color>
+          external_account_collection: true,
+          disable_stripe_user_authentication: false
+        },
+      },
+    },
+  }
+  end note
+  Backend -> StripeBEAPI: create account session 
+  Backend <-> StripeBEAPI: get accountSession
+  Backend -> ServiceSubDialog: return accountSession
+deactivate Backend
+
+ServiceSubDialog -> ServiceSubDialog: stripeConnectInstance with accountSession.clientSecret
+note over ServiceSubDialog
+.setOnExit, .setOnStepChange could add the event listener
+end note
+ServiceSubDialog -> OnboardingDialog: render the onboarding element in the new dialog
+ServiceSubDialog <- OnboardingDialog: onboarding complete by `setOnExit` or out notification
+ServiceSubDialog -> ServiceSubDialog: status update
+
+
+== continue onboarding ==
+note over ServiceSubDialog
+<color red>Our current similar request?:</color>
+
+Update Account:
+/payment/connect-accounts/account-links
+
+But need another endpoint to provide the accountSession along
+With the exsit accountID(from token)
+end note
+ServiceSubDialog -> ServiceSubDialog: similar as create new
+@enduml
