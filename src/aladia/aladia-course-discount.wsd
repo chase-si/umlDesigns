@@ -1,0 +1,57 @@
+@startuml
+title "course discount design"
+legend right
+  CoursePriceLabel: show the discount price at course detail page or market page;
+  <color green>Green: FE UI; </color>
+  <color blue>Blue: BE API; </color>
+  <color red>Red: Todo; </color>
+end legend
+
+box "Frontend"
+participant CourseBuilder
+participant CoursePriceLabel
+participant CheckoutPopup
+end box
+
+participant Backend
+
+autonumber
+CourseBuilder -> CourseBuilder: create a coupon
+CourseBuilder -> Backend: create a coupon: <color blue>/courses/{id}/coupons post</color>
+
+
+alt if "apply discount in marketplace"
+autonumber 3.1
+CourseBuilder -> CourseBuilder: <color green>Apply discount in marketplace</color> selected
+CoursePriceLabel <- Backend: get coupon info from <color blue>/courses/{courseId} .coupon</color>
+
+note over CourseBuilder
+  <color red>Todo?: BE validation error or FE limit </color>
+  <color red>to ensure only one coupon can be applied</color>
+end note
+CourseBuilder -> CourseBuilder: add another coupon and apply in marketplace
+CourseBuilder -> CourseBuilder: save, publish other steps...
+CoursePriceLabel -> CoursePriceLabel: render with discount
+CheckoutPopup -> CheckoutPopup: open
+CheckoutPopup -> Backend: get coupon info from \n <color blue>/payment/products/{productId} .priceDiscountData</color>
+CheckoutPopup -> CheckoutPopup: render with discount
+end
+
+alt if "add promotion code"
+autonumber 4.1
+CourseBuilder -> CourseBuilder: <color green>Add promotion code</color>
+CourseBuilder -> CourseBuilder: save, publish other steps...
+CheckoutPopup -> CheckoutPopup: open
+CheckoutPopup -> CheckoutPopup: <color green>enter promotion code and apply</color>
+CheckoutPopup -> Backend: apply promotion code: \n <color blue>/payment/products/{id}/discounts post {code} </color>
+  alt if success
+    CheckoutPopup <- Backend: <color green>render with discount</color>
+  else failed
+    CheckoutPopup <- Backend: <color green>render with error message</color>
+  end
+end
+
+autonumber 5
+CheckoutPopup -> CheckoutPopup: click <color green>buy now</color> to checkout
+CheckoutPopup -> Backend: get checkout session from <color blue>/payment/checkout-sessions { couponId? promotionCode? }</color>
+@enduml

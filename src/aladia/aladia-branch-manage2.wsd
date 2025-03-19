@@ -1,0 +1,32 @@
+@startuml
+title "cherry pick flow"
+
+participant Production
+participant Develop
+
+participant TaskBranch
+participant DevMergeTaskBranch
+
+participant Commit
+
+autonumber
+Production -> TaskBranch: checkout branch from production
+TaskBranch -> TaskBranch: code on it
+TaskBranch <-> Commit: <color green>commit hash A</color>
+note over TaskBranch
+  1. a lot of commit not from yours in PR
+  2. can't merge develop to this branch
+  3. conflicts to resolve
+end note
+TaskBranch ->x Develop: PR to develop
+Develop -> DevMergeTaskBranch: checkout branch from Develop
+TaskBranch ->x DevMergeTaskBranch: merge will get conflicts to handle
+DevMergeTaskBranch <- TaskBranch: <color red>cherry pick</color> <color green>commit hash A</color>
+DevMergeTaskBranch <-> Commit: get <color green>commit hash A</color> on this branch
+note over TaskBranch
+  should no conflict.
+  because it's newly checkout from develop
+end note
+DevMergeTaskBranch -> Develop: PR to develop with <color green>commit hash A</color>
+TaskBranch -> Production: PR to production with <color green>commit hash A</color>
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+title "branch flow and task status"
+
+participant Production
+participant Staging
+participant Develop
+
+box "Development branches"
+participant TaskBranch as "Task branch"
+participant SubtaskBranch as "Subtask branch"
+end box
+
+participant TaskStatus
+
+autonumber
+Production -> TaskBranch: create branch from production
+TaskBranch -[#DAA520]> TaskStatus: Status:<color DAA520> In progress</color>
+TaskBranch -> TaskBranch: develop and test on task branch
+TaskBranch -> TaskBranch: ready to merge
+  autonumber 5.1
+  alt "PR to develop"
+    TaskBranch -> Develop: create PR to develop branch 
+    Develop -> Develop: <color black>Approve access</color> => reviewer with write access.
+    Develop -> Develop: merged
+    Develop -[#800080]> TaskStatus: Status:<color 800080>Supervisioning</color>
+    Develop -> Develop: <color black>Dev team testing</color>
+  end
+  autonumber 6.1
+  alt if "find bug on develop"
+    TaskBranch -> SubtaskBranch: create subtask branch from task branch
+    TaskBranch -[#FFA500]> TaskStatus: Status:<color FFA500>Fixing</color>
+    SubtaskBranch -> SubtaskBranch: develop and test on subtask branch
+    SubtaskBranch -> TaskBranch: PR merge back to mainTaskBranch
+    TaskBranch -> Develop: same flow back to Step 5.1
+  end
+
+
+autonumber 7
+TaskBranch --> Staging: PR to staging, (in the future)
+  autonumber 8.1
+  alt "PR to Production"
+    TaskBranch -> Production: create PR to production branch 
+    Production -> Production: <color black>Approve access</color> => code owner.
+    Production -> Production: merged
+    Production -[#008000]> TaskStatus: Status:<color 008000>Closed</color>
+  end
+autonumber 9
+TaskBranch -> TaskBranch: delete TaskBranch 
+
+@enduml
