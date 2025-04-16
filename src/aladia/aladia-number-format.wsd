@@ -1,0 +1,14 @@
+@startuml
+title "number format"
+
+start
+if (onboarding on Stripe) then (yes)
+  :use country send to Stripe;
+else (no)
+  :use language setting, \n en or it; 
+end if
+
+:locales number format;
+end
+
+@enduml

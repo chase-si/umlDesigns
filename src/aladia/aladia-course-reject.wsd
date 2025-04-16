@@ -1,0 +1,58 @@
+@startuml
+title "variables passing in course reject"
+
+participant FE
+participant BE
+participant EmailTemplates
+
+autonumber
+FE -> FE: superAdmin at `management` page
+FE -> FE: reject course with some reasons
+note over FE
+  <b>params example:</b>
+
+  reasons: [
+    {
+      key: 'poor-quality', // <color red>key must match between in FE and BE</color>
+      enLabel: 'Poor quality', // <color green>only maintain in FE</color>
+      itLabel: 'Basso livello', //<color green>only maintain in FE</color>
+      enDescription: 'current course is not good', // <color green>only maintain in FE</color>
+      itDescription: 'il corso non è buono', // <color green>only maintain in FE</color>
+    }, 
+    {
+      key: 'technical-issues',
+      enLabel: 'Technical issues',
+      itLabel: 'Problemi tecnici',
+      enDescription: 'current course has technical issues',
+      itDescription: 'il corso ha problemi tecnici',
+    }, 
+    ...
+  ]
+end note
+FE -> BE: /courses/{id}/review
+BE -> BE: handle the logic with key(I don't know details here)...
+BE -> BE: query the user language setting
+BE -> BE: handle the <b>params example:</b>
+note over BE
+  <b>template variables example:</b>
+  {
+    "courseName": "course name",
+    ...
+    "reasons": [
+      {
+        number: '1',
+        label: 'Poor quality' or 'Basso livello',
+        description: 'current course is not good' or 'il corso non è buono',
+      },
+      {
+        number: '2',
+        label: 'Technical issues' or 'Problemi tecnici',
+        description: 'current course has technical issues' or 'il corso ha problemi tecnici',
+      },
+      ...
+    ]
+    ...
+  }
+end note
+BE -> EmailTemplates: render email template with variables to send
+@enduml
