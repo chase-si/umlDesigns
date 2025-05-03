@@ -1,0 +1,25 @@
+@startuml
+start
+:visit `/user/hub/{ChaseID}/profile?open-notification=true`;
+:check `in middleware/auth.global.js` => is Logged?;
+if (is not Logged?) then (Yes)
+  :Next check;
+else (No)
+  :Show login popup;
+  :Login;
+endif
+
+:check `in middleware/profile.global.js` => currentUserID === ChaseID;
+if (currentUserID === ChaseID) then (yes)
+  :navigate to \n `/user/hub/{ChaseID}/profile?open-notification=true` \n as owner;
+  :handle the query `open-notification=true` \n in `pages/profile/[name]/index.vue`;
+
+else (no)
+  :navigate to \n `/profile/{currentUserID}?open-notification=true` \nas visitor;
+  :handle the query `open-notification=true` \n in `pages/organization/hub/[name]/profile.vue`;
+endif
+
+:open the popup;
+stop
+
+@enduml

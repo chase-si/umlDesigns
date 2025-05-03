@@ -1,0 +1,47 @@
+@startuml
+title "Frontend 403 error popup code design document"
+
+box "Frontend"
+participant component
+participant PaymentServiceFailedDialog
+participant "hubSpaces/hubCourse/hubPayment/.." as store
+participant "request.js" as request
+end box
+
+participant backend
+
+autonumber
+component -> component: click button 
+component -> store: call the function includes request in store
+
+note over store
+endpoints related to AI/Storage/Streaming cost:
+
+post v2/space
+get v2/ai/contents/courses/${courseId}/categories
+get v2/ai/contents/courses?assignCategories=${assignCategories}
+get v2/calendars/${calendarId}/events/${eventId}/auth
+get v2/calendars/${calendarId}/events/${eventId}/auth
+
+...more to add
+end note
+store -> backend: request to endpoint
+backend -> backend: check default card binding or not,\n or spending from card
+
+note over backend
+403 errors with errorCodes below:
+
+storage-free-tier-finished,
+streaming-free-tier-finished,
+ai-free-tier-finished,
+user-has-failed-payments,
+end note
+backend -> request: 403 error
+request -> request: check the errorCode in interceptors.response
+request -> store: throw to the store
+store -> store: <color red>try catch to handle the error</color>
+store -> store: set the errorCode to the paymentStore.serviceFailedDialog
+store -> PaymentServiceFailedDialog: <color red>show the dialog</color>
+store -> component: throw error to the component, incase or logic to handle 
+
+@enduml
