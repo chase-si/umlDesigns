@@ -1,0 +1,42 @@
+@startuml
+title "country problem"
+' legend top
+'   <color green>绿色:浏览器内显示的当地时间; </color>
+'   <color blue>蓝色:0时区标准时间(UTC); </color>
+'   <color red>强调 </color>
+' end legend
+
+
+participant Frontend
+participant Backend
+participant Stripe
+
+autonumber
+== begin onboarding ==
+Frontend -> Frontend: begin onboarding
+Frontend -> Backend: request with `country` become a teacher \n or organization begin onboarding
+Backend <-> Stripe: call Stripe API and webhooks to sync the `country` data
+Backend -> Backend: sync the `country` to user's or organization's profile
+Backend -> Frontend: request back
+
+== edit profile ==
+Frontend -> Frontend: interrupt onboarding
+Frontend -> Frontend: edit the `country` profile
+Frontend -> Backend: request to update `country` in profile
+Backend -> Backend: save to database
+Backend ->x Stripe: <color red>`country` on Stripe is not allowed to edit</color>
+Backend -> Frontend: request back
+
+== continue onboarding ==
+Frontend -> Frontend: continue onboarding
+Frontend <-> Backend: read the `country` from profile endpoint
+Frontend -> Frontend: show the `country` info in the onboarding popup
+Frontend -> Frontend: it looks like onboarding with new `country`
+Stripe -> Stripe: keeps the old `country` on Stripe
+
+
+' Resolution1:
+' backend return another field to frontend to show the `country` about onboarding
+
+' Resolution2:
+' frontend forbid the user to edit the `country` in profile after onboarding begins

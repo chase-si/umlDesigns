@@ -1,0 +1,100 @@
+@startuml
+title "目前购买课程时间限制逻辑(2025-05-30)"
+legend top
+  <color green>绿色:浏览器内显示的当地时间; </color>
+  <color blue>蓝色:0时区标准时间(UTC); </color>
+  <color red>强调 </color>
+end legend
+
+box Frontend
+participant "课程创建者 GMT +8(北京时间)" as Seller
+participant "学生A GMT +8(北京时间)" as Buyer1
+participant "学生B GMT +2(罗马时间-夏时令)" as Buyer2
+' participant "学生C GMT +0(0时区)" as Buyer3
+' participant "学生C GMT -7(洛杉矶时间) \n 05-29 20:15:00" as Buyer3
+end box
+
+participant Backend
+
+== 创建课程-哪个时区创建无所谓 \n 此时: \n 北京:05-30 01:56:00, \n 罗马:05-29 19:56:00, \n 0时区:05-29 17:56:00 ==
+autonumber
+Seller -> Seller: 选择课程开始时间为<color red>明天 05-31</color> \n <color green>本地: 05-31 (01:56:00 - 当前操作时间)</color>
+Seller -> Seller: 应后端要求, 转化为0时区时间发送后端 \n <color blue>UTC: 05-30 17:56:00</color>
+Seller -> Backend: 发送后端
+note over Backend
+  原始: <color blue>UTC: 05-30 17:56:00</color>
+  取整限制: <color blue>UTC: 05-30 00:00:00</color>
+  限制逻辑: 在今天开始之后不可购买, 即:
+  <color blue>UTC: 05-30 00:00:00</color>之后不可购买
+end note
+Backend -> Backend: 后端做天数取整
+Backend -> Seller: 接口返回不变, \n <color blue>UTC: 05-30 17:56:00</color>
+Seller -> Seller: 前端创建完课程 依旧显示开始时间 \n <color green>本地: 05-31 (01:56:00 - 时分不显示)</color>
+Seller -> Seller: <color red>符合逻辑</color>
+
+== 北京学生购买课程1 \n 此时: \n 北京:05-30 01:56:00, \n 罗马:05-29 19:56:00, \n 0时区:05-29 17:56:00 ==
+Buyer1 -> Buyer1: 选择课程
+Buyer1 -> Backend: 请求接口查看课程开始时间
+Backend -> Buyer1: 返回UTC课程开始时间 \n <color blue>UTC: 05-30 17:56:00</color>
+Buyer1 -> Buyer1: 显示课程开始时间 \n <color green>本地: 05-31 (01:56:00 - 时分不显示)</color>
+Buyer1 -> Backend: 请求购买
+note over Backend
+  现在本地时间: <color green>本地: 05-30 01:56:00 </color>
+  标准时区时间: <color blue>UTC: 05-29 17:56:00 </color>
+  与课程购买截止时间比较, 是<color blue>05-30:00:00</color> 之前, 
+  可以购买
+end note
+Backend -> Buyer1: 返回200
+Buyer1 -> Buyer1: 购买成功
+Buyer1 -> Buyer1: <color red>符合逻辑</color>,\n  课程显示开始时间是<color green>5-31</color>, 我本地时间是<color green>05-30</color>
+
+== 罗马学生购买课程1 \n 此时: \n 北京:05-30 01:56:00, \n 罗马:05-29 19:56:00, \n 0时区:05-29 17:56:00   ==
+Buyer2 -> Buyer2: 选择课程
+Buyer2 -> Backend: 请求接口查看课程开始时间
+Backend -> Buyer2: 返回UTC课程开始时间 \n <color blue>UTC: 05-30 17:56:00</color>
+Buyer2 -> Buyer2: 显示课程开始时间 \n <color green>本地: 05-30 (19:56:00 - 时分不显示)</color>
+Buyer2 -> Backend: 请求购买
+note over Backend
+  现在本地时间: <color green>本地: 05-29 19:56:00</color>
+  标准时区时间: <color blue>UTC: 05-29 17:56:00 </color>
+  与课程购买截止时间比较, 是<color blue>05-30:00:00</color> 之前, 
+  可以购买
+end note
+Backend -> Buyer2: 返回200
+Buyer2 -> Buyer2: 购买成功
+Buyer2 -> Buyer2: <color red>符合逻辑</color>,\n 课程显示开始时间是<color green>05-30</color>, 北京学生本地时间是<color green>05-29</color>
+
+
+== 北京学生购买课程2 \n 此时: \n 北京:05-30 09:56:00, \n 罗马:05-30 03:56:00, \n 0时区:05-30 01:56:00 ==
+Buyer1 -> Buyer1: 选择课程
+Buyer1 -> Backend: 请求接口查看课程开始时间
+Backend -> Buyer1: 返回UTC课程开始时间 \n <color blue>UTC: 05-30 17:56:00</color>
+Buyer1 -> Buyer1: 显示课程开始时间 \n <color green>本地: 05-31 (01:56:00 - 时分不显示)</color>
+Buyer1 -> Backend: 请求购买
+note over Backend
+  现在本地时间: <color green>本地: 05-30 09:56:00 </color>
+  标准时区时间: <color blue>UTC: 05-30 01:56:00 </color>
+  与课程购买截止时间比较, 已经是<color blue>05-30:00:00</color> 之后, 
+  不可以购买
+end note
+Backend -> Buyer1: 返回400
+Buyer1 -> Buyer1: 购买失败, 提示已经过期
+Buyer1 -> Buyer1: <color red>不符合逻辑</color>,\n  课程显示开始时间是<color green>5-31</color>, 北京学生本地时间是<color green>05-30</color>
+
+== 罗马学生购买课程2 \n 此时: \n 北京:05-30 09:56:00, \n 罗马:05-30 03:56:00, \n 0时区:05-30 01:56:00   ==
+Buyer2 -> Buyer2: 选择课程
+Buyer2 -> Backend: 请求接口查看课程开始时间
+Backend -> Buyer2: 返回UTC课程开始时间 \n <color blue>UTC: 05-30 17:56:00</color>
+Buyer2 -> Buyer2: 显示课程开始时间 \n <color green>本地: 05-30 (19:56:00 - 时分不显示)</color>
+Buyer2 -> Backend: 请求购买
+note over Backend
+  现在本地时间: <color green>本地: 05-30 03:56:00</color>
+  标准时区时间: <color blue>UTC: 05-30 01:56:00 </color>
+  与课程购买截止时间比较, 已经是<color blue>05-30:00:00</color> 之后, 
+  不可以购买
+end note
+Backend -> Buyer2: 返回400
+Buyer2 -> Buyer2: 购买失败, 提示已经过期
+Buyer2 -> Buyer2: <color red>符合逻辑</color>,\n  课程显示开始时间是<color green>05-30</color>, 罗马学生本地时间是<color green>05-30</color>
+
+@enduml
