@@ -1,0 +1,25 @@
+@startuml
+title "email templates development flow(old one with Gmail workspace)"
+
+participant "Figma" as Design
+participant "Aladia-email-templates-frontend" as Frontend
+participant Backend
+
+autonumber
+== develop templates html file ==
+Frontend <- Design: get the new design from figma
+Frontend -> Frontend: edit in dev mode
+Frontend -> Frontend: build vue file to html file
+Frontend -> Frontend: git commit [commit-x], git tag [tag-x], \n git push.
+Frontend -> Design: update the build file path in the figma.
+
+== backend implement ==
+Backend <- Frontend: git pull, copy related file in `/templates` to backend project
+note over Backend
+  Check the variables like {{fullName}} in the html file.
+  Test with our email service on local.
+end note
+Backend -> Backend: develop
+Backend -> Backend: <b>git commit -m "[commit-x] or [tag-x]"</b>, \n it's to track the frontend's template version.
+Backend -> Backend: deploy to develop env to test
+@enduml

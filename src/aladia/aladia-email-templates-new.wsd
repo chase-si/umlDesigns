@@ -1,0 +1,54 @@
+@startuml
+title "email templates development flow(sendGrid)"
+
+participant "Figma" as Design
+participant "Aladia-email-templates-frontend" as Frontend
+participant Backend
+
+
+participant sendGrid
+
+autonumber
+== develop templates html file ==
+Frontend <- Design: get the new design from figma
+Frontend -> Frontend: edit in dev mode
+Frontend -> Frontend: build vue file to html file
+Frontend -> Design: update the build file path in the figma.
+
+== sync to sendGrid ==
+alt "if the template is not in sendGrid"
+  sendGrid -> sendGrid: create a template for each html file
+  sendGrid -> sendGrid: copy the <color red>templateId</color>
+  sendGrid -> Frontend: maintain the <color red>templateId and template relationship</color> in the frontend project
+  note over Frontend
+    welcome: {
+      itTemplate: 'templates/it/welcome/index.html',
+      itSendGridTemplateId: '',
+      enTemplate: 'templates/en/welcome/index.html',
+      enSendGridTemplateId: '{templateId}',
+    },
+  end note
+  Frontend -> Frontend: in file <color red>/scripts/sendGrid/sendGridTemplateId.js</color>
+end
+
+note over Frontend
+  1.manually copy to update the new template html file to sendGrid.
+  2.run the script to sync the new template html file to sendGrid:
+  `node ./scripts/sendGrid/syncTemplate.js`
+
+end note
+Frontend -> sendGrid: sync the new template html file to sendGrid
+Frontend -> Frontend: git commit [commit-x], git tag [tag-x], \n git push.
+
+
+== backend implement ==
+Backend <- Frontend: git pull, copy `/scripts/sendGrid/syncTemplate.js` to backend project
+Backend -> Backend: check on sendGrid and the file, to get the related <color red>templateId</color>
+note over Backend
+  Check the variables like {{fullName}} in the html file.
+  Test with our email service on local.
+end note
+Backend -> Backend: develop
+Backend -> Backend: test with our backend email service.
+Backend -> Backend: git commit -m "[commit-x] or [tag-x]", \n it's to track the frontend's template version.
+@enduml
