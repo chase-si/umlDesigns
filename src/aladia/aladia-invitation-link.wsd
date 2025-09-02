@@ -1,0 +1,47 @@
+@startuml
+title "Invitation Flow"
+
+participant FE
+participant BE
+participant Email
+
+== space invitation ==
+autonumber
+FE -> FE: some operation to send the invitation link to the user
+FE -> BE: call <color blue>POST /v2/invitations</color>
+
+note over BE
+`${frontendBaseurl}/invite/${resourceId}?type=${resourceType}`
+Add an example here:
+
+end note
+BE -> Email: send email, and set the invitation link
+BE -> FE: send notification to FE
+
+== click the notification ==
+FE -> FE: open FE router `/invite/{id}`
+FE -> BE: call <color blue>GET /v2/invitations-links/{id}</color>
+FE <- BE: return the invitationId, \n invitationType: space/course/organization
+FE -> FE: click the `accept` button
+FE -> BE: call <color blue>PATCH /v2/invitations/{invitationId}</color>
+BE -> BE: handle invitation business logic
+BE -> FE: FE navigate to the the page depends on the invitationType
+
+== or click the `accept` button in email ==
+Email -> Email: open the invitation link
+Email -> FE: open FE router `/invite/{encryptedId}`
+alt if not logged in(todo)
+  FE -> FE: <color green>todo</color>login and redirection to the router `/invite/{encryptedId}` again
+end 
+FE <-> BE: call <color blue>GET /v2/invitations-links/{encryptedId}</color>
+BE -> BE: <color red>access Validation</color>
+alt if has no access
+FE <- BE: <color green>todo</color> return something(todo to discuss)
+FE -> FE: <color green>todo</color> a friendly message or something else
+end
+FE -> FE: click the `accept` button
+FE -> BE: call <color blue>PATCH /v2/invitations/{invitationId}</color> 
+BE -> BE: handle invitation business logic
+BE -> FE: FE navigate to the the page depends on the invitationType
+
+@enduml

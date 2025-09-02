@@ -1,54 +1,63 @@
 @startuml
 title "email templates development flow(sendGrid)"
 
-participant "Figma" as Design
-participant "Aladia-email-templates-frontend" as Frontend
+participant SendGrid
+participant "Frontend template project" as Frontend
 participant Backend
 
+autonumber 1.1
+== frontend: develop templates html file ==
+Frontend -> Frontend: get the new design from Figma
+Frontend -> Frontend: edit in dev mode and build to html file
 
-participant sendGrid
-
-autonumber
-== develop templates html file ==
-Frontend <- Design: get the new design from figma
-Frontend -> Frontend: edit in dev mode
-Frontend -> Frontend: build vue file to html file
-Frontend -> Design: update the build file path in the figma.
-
-== sync to sendGrid ==
+== frontend: sync to SendGrid ==
 alt "if the template is not in sendGrid"
-  sendGrid -> sendGrid: create a template for each html file
-  sendGrid -> sendGrid: copy the <color red>templateId</color>
-  sendGrid -> Frontend: maintain the <color red>templateId and template relationship</color> in the frontend project
+  SendGrid -> SendGrid: create 2 templates for en/it html file
+  SendGrid -> SendGrid: copy the templateId
+  SendGrid -> Frontend: maintain the templateId and template relationship in the frontend project
   note over Frontend
+    example:
     welcome: {
+      backendRename<color red>?</color>: 'WELCOME_EMAIL', // it exits only for the old emails
+      itSubject: 'Benvenuto in Aladia. Siamo felici di averti con noi.',
       itTemplate: 'templates/it/welcome/index.html',
-      itSendGridTemplateId: '',
+      <color red>itSendGridTemplateId</color>: 'd-f1cf6445728d4d9abfc69ee11d6f2771',
+      enSubject: 'Welcome to Aladia. We are glad to have you on board.',
       enTemplate: 'templates/en/welcome/index.html',
-      enSendGridTemplateId: '{templateId}',
+      <color red>enSendGridTemplateId</color>: 'd-9410f182daed4830b244dd283f7e1912',
+      <color red>variables</color>: {
+        fullName: 'Welcome Test Name',
+        subject?: 'Welcome {{fullName}}' // if exists, it needs to set dynamic subject
+        visitLink?: 'https://aladia.com/visit' // if exists, it shows the navigation link format
+      },
     },
   end note
-  Frontend -> Frontend: in file <color red>/scripts/sendGrid/sendGridTemplateId.js</color>
+  Frontend -> Frontend: update in file <color red>/scripts/sendGrid/sendGridTemplateId.js</color>
 end
 
-note over Frontend
-  1.manually copy to update the new template html file to sendGrid.
-  2.run the script to sync the new template html file to sendGrid:
-  `node ./scripts/sendGrid/syncTemplate.js`
-
-end note
-Frontend -> sendGrid: sync the new template html file to sendGrid
+Frontend -> SendGrid: sync the new template html file to sendGrid
 Frontend -> Frontend: git commit [commit-x], git tag [tag-x], \n git push.
 
 
-== backend implement ==
-Backend <- Frontend: git pull, copy `/scripts/sendGrid/syncTemplate.js` to backend project
-Backend -> Backend: check on sendGrid and the file, to get the related <color red>templateId</color>
+== backend: implement ==
+autonumber 2.1
+Frontend -> Backend: <color red>notify developer</color>: the templates on SendGrid and sendGridTemplateId.js file is updated, \n and ready for backend to use.
+Backend <-> Frontend: developer check <color red>sendGridTemplateId.js</color> file to get the <color red>id</color>.
 note over Backend
-  Check the variables like {{fullName}} in the html file.
-  Test with our email service on local.
+  example:
+  WELCOME_EMAIL: { // free to rename the key
+    templateName: 'welcome', // free to edit the value, but it's better to follow the frontend project template name
+    <color red>templateId_en</color>: 'd-9410f182daed4830b244dd283f7e1912',
+    <color red>templateId_it</color>: 'd-f1cf6445728d4d9abfc69ee11d6f2771',
+    subject: 'Welcome to Aladia. We are glad to have you on board.',  // free to edit the value
+    it_subject: 'Benvenuto in Aladia. Siamo felici di averti con noi.',  // free to edit the value
+  },
+
+<color red>Backend developer could edit the text I said `free to rename/edit`, but its better to follow from the frontend project for better match.</color>
 end note
-Backend -> Backend: develop
-Backend -> Backend: test with our backend email service.
-Backend -> Backend: git commit -m "[commit-x] or [tag-x]", \n it's to track the frontend's template version.
+Backend -> Backend: update the id in \n <color red>src/microservices/notification/mail/type/email-template.type.ts</color>
+Backend <-> Frontend: developer check <color red>sendGridTemplateId.js</color> file to get the <color red>variables</color>.
+Backend <-> SendGrid: login sendGrid, <color red>double check the variables</color> in the html file.
+Backend -> Backend: update the variables in \n <color red>src/common/.../xxx.dto.ts toMailPlaceholders</color>
+Backend -> Backend: test
 @enduml

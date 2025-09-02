@@ -1,0 +1,24 @@
+@startuml
+title "publish course error"
+
+participant "Frontend \n +2 Rome time zone" as Frontend
+
+participant Backend
+
+== case meet the error(Assume it's Rome time zone July 6th 00:30:00) ==
+autonumber
+Frontend -> Frontend: User click publish button
+Frontend -> Backend: PATCH `/v2/courses/{id}/publish`
+Backend -> Backend: transform the time to UTC => <color red>UTC: July 5th 22:30:00</color>
+Backend -> Backend: some logic to judge <color red>UTC: July 5th </color> is not able to publish
+Backend -> Frontend: return error message
+
+== case could publish(Assume it's Rome time zone July 6th 02:30:00) ==
+autonumber
+Frontend -> Frontend: User click publish button
+Frontend -> Backend: PATCH `/v2/courses/{id}/publish`
+Backend -> Backend: transform the time to UTC => <color red>UTC: July 6th 00:30:00</color>
+Backend -> Backend: some logic to judge <color red>UTC: July 6th </color> is able to publish
+Backend -> Frontend: return success message
+
+@enduml

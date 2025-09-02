@@ -1,0 +1,58 @@
+@startuml
+title "How does Google Tag work"
+
+box AdsSource
+  participant LinkedInAds
+  ' participant FacebookAds
+  ' participant GoogleAds
+end box
+
+participant AladiaWebsite
+
+box "GoogleTag(tracking tool)" 
+  participant GA4_Tag
+  participant LinkedInInsightTag
+end box
+
+box AnalyticsPlatform
+  participant GoogleAnalytics
+  participant LinkedInCampaignManager
+end box
+
+== ads tracking flow: linkedin as example ==
+autonumber
+LinkedInAds -> AladiaWebsite: visit, URL: utm_source=Linkedin
+
+note over AladiaWebsite
+one trigger could fire serval tags
+endnote
+autonumber 2.1
+AladiaWebsite -> GA4_Tag: fire visit trigger
+GA4_Tag -> GoogleAnalytics: send visit event
+GoogleAnalytics -> GoogleAnalytics: we could view the analytics data
+
+autonumber 3.1
+AladiaWebsite -> LinkedInInsightTag: fire visit trigger
+LinkedInInsightTag -> LinkedInCampaignManager: send visit event
+LinkedInCampaignManager -> LinkedInCampaignManager: we could view the analytics data
+
+== our current progress ==
+autonumber
+LinkedInAds -[#green]> AladiaWebsite: <color:green>visit, URL: utm_source=Linkedin</color>
+
+autonumber 2.1
+AladiaWebsite -[#green]> GA4_Tag: <color:green>fire visit trigger</color>
+GA4_Tag -[#green]> GoogleAnalytics: <color:green>send visit event</color>
+GoogleAnalytics -[#green]> GoogleAnalytics: <color:green>we could view the analytics data</color>
+
+autonumber 3.1
+note over AladiaWebsite
+I validate this because the 2.1 => 2.3 works.
+And they are sharing a same tag.
+endnote
+AladiaWebsite -[#green]> LinkedInInsightTag: <color:green>fire visit trigger</color>
+LinkedInInsightTag -[#red]x LinkedInCampaignManager: <color:red>send visit event</color>
+LinkedInCampaignManager -[#red]x LinkedInCampaignManager: <color:red>we could not view the analytics data</color>
+
+== similar problem with facebook as 3.2 and 3.3 ==
+@enduml
