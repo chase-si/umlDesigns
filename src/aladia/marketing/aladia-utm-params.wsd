@@ -1,0 +1,40 @@
+@startuml
+title "utm params setting and tracking flow"
+
+participant Frontend
+
+box "Ad platform Google/LinkedInAds/Meta/.." as AdPlatform
+  participant CampaignSetting
+  participant ConversionSetting
+end box
+
+box Tracking tool
+participant GoogleTag
+participant GoogleAnalytics
+end box
+
+autonumber 1.1
+== setting ==
+CampaignSetting -> CampaignSetting: create a new campaign, fill content
+ConversionSetting -> ConversionSetting: create a new conversion for new campaign
+CampaignSetting <- ConversionSetting: connect the conversion to the campaign
+CampaignSetting -> CampaignSetting: get the campaign_id
+CampaignSetting -> CampaignSetting: set the id in the <color blue>utm_params</color>
+
+Frontend -> GoogleTag: <color blue>event_name</color> to match
+CampaignSetting -> GoogleTag: <color blue>utm_params</color> to match
+GoogleTag -> GoogleTag: create a new trigger to match the <color blue>utm_params</color> and <color blue>event_name</color>
+
+GoogleTag -> GoogleAnalytics: connect the trigger -> gTag -> GA4 event
+GoogleTag -> ConversionSetting: the platform <- gTag <- connect the trigger
+
+== trigger ==
+autonumber 2.1
+Frontend -> Frontend: Click/View/... fire the event
+Frontend -> GoogleTag: fire the event
+GoogleTag -> GoogleTag: match the event_name and utm_params
+GoogleTag -> GoogleAnalytics: send the event and data to GA4
+GoogleAnalytics -> GoogleAnalytics: we could view the analytics data
+GoogleTag -> ConversionSetting: send the event and data to ad platform
+ConversionSetting -> ConversionSetting: the conversion data on platform updates
+@enduml

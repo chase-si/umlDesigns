@@ -30,14 +30,14 @@ BE -> FE: FE navigate to the the page depends on the invitationType
 == or click the `accept` button in email ==
 Email -> Email: open the invitation link
 Email -> FE: open FE router `/invite/{encryptedId}`
-alt if not logged in(todo)
-  FE -> FE: <color green>todo</color>login and redirection to the router `/invite/{encryptedId}` again
+alt if not logged in
+  FE -> FE: login and redirection to the router `/invite/{encryptedId}` again
 end 
 FE <-> BE: call <color blue>GET /v2/invitations-links/{encryptedId}</color>
 BE -> BE: <color red>access Validation</color>
 alt if has no access
-FE <- BE: <color green>todo</color> return something(todo to discuss)
-FE -> FE: <color green>todo</color> a friendly message or something else
+FE <- BE: return something(todo to discuss)
+FE -> FE: a friendly message or something else
 end
 FE -> FE: click the `accept` button
 FE -> BE: call <color blue>PATCH /v2/invitations/{invitationId}</color> 

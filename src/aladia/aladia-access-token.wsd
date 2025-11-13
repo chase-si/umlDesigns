@@ -1,0 +1,40 @@
+@startuml
+title "Access Token Issue"
+
+participant Frontend as FE
+participant Cookie
+participant Backend as BE
+
+== issue1 org => user ==
+autonumber 1.1
+note over Cookie
+Now is organizationToken
+end note
+FE -> FE: switch organization role to user role
+FE -> BE: <color blue>DELETE /v2/auth/switch-context</color> \n with accessToken=organizationToken
+FE <- BE: response accessToken=userToken
+Cookie <- BE: set accessToken=userToken
+Cookie -> Cookie: Update to userToken
+FE -> BE: <color blue>GET /v2/profiles/me</color> \n with accessToken=userToken
+note over Cookie
+activeOrganization is the key field to help FE to identify the role
+end note
+FE x-- BE: <color red>response data: activeOrganization !== null</color>
+
+
+== issue2 user => org ==
+autonumber 2.1
+note over Cookie
+Now is userToken
+end note
+FE -> FE: switch userRole role to organization role
+FE -> BE: <color blue>GET /v2/auth/switch-context/${orgId}</color> \n with accessToken=userToken
+FE <- BE: response accessToken=organizationToken
+Cookie <- BE: set accessToken=organizationToken
+Cookie -> Cookie: Update to organizationToken
+FE -> BE: <color blue>GET /v2/profiles/me</color> \n with accessToken=userToken
+note over Cookie
+activeOrganization is the key field to help FE to identify the role
+end note
+FE x-- BE: <color red>response data: activeOrganization !== {id:orgId, ...} </color>
+@enduml

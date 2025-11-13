@@ -1,0 +1,44 @@
+@startuml
+title "utm params setting and tracking flow"
+
+participant LocalStorage as LS
+participant Frontend as FE
+
+participant googleTagManager as GTM
+participant googleAnalytics as GA4
+participant adPlatforms as AP
+
+== course related [Global part] ==
+note over FE
+URL: .../courses/{courseId}?utm_source=...
+end note
+FE -> FE: visit course page from ad
+activate FE
+FE -> FE: 
+FE -> FE: get utm cache from LS
+FE -> LS: set utm cache
+deactivate FE
+
+
+autonumber 1.1
+== courses related [Course Page View] ==
+FE -> GTM: trigger event page_view automatically
+GTM -> GA4: send event page_view automatically
+note over GA4
+filter in Google Analytics:
+1. page path contains `/courses/` +
+2. event_name is `page_view`
+end note
+GA4 -> GA4: we could view the analytics data
+
+== courses related [Checkout Button Click] ==
+FE -> FE: click checkout button
+note over FE
+URL: courses/{courseId}?utm_source=...
+end note
+FE -> FE: 
+
+
+== courses related [Purchase successfully] ==
+
+@enduml

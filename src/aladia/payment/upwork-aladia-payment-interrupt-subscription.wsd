@@ -1,0 +1,75 @@
+@startuml
+title "fields details of the payment interruption"
+legend top right
+  Tips:
+  <color blue>Blue: Endpoints</color>
+  <color green>Green: Key fields</color>
+  <color red>Red: Discussion</color>
+end legend
+
+box "Frontend Student Page"
+' participant ChatStudent
+participant PaymentStudent
+' participant EmailStudent
+end box
+
+participant Backend
+
+box "Frontend Teacher Page"
+participant ChatTeacher
+participant PaymentTeacher
+' participant EmailTeacher
+end box
+
+
+autonumber
+== begin interrupt subscription ==
+PaymentStudent -> PaymentStudent: click `<color green> subscriptionStatus === 'active'</color>` subscription data
+PaymentStudent <-> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+  alt if <color green>cancelRequest === null </color>
+    PaymentStudent -> PaymentStudent: Show `Requesting Cancellation + Active` Buttons
+    PaymentStudent -> PaymentStudent: Click `Requesting Cancellation` Button
+    PaymentStudent -> PaymentStudent: Show popup to fill information to send to backend
+    PaymentStudent -> Backend: POST subscription data \n <color blue>/payment/subscriptions/{subscriptionId}/cancel-request</color>
+      note over PaymentStudent
+      subscriptionStatus won't change, keep 'active' 
+      end note
+    PaymentStudent <- Backend: return <color green>{ cancelRequest: { requested: true }}</color>
+    PaymentStudent -> PaymentStudent: Show `Cancel request Sent` Button, disable click event.
+    Backend <-> ChatTeacher: render subscription request in the chat to operate
+    PaymentTeacher -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+    PaymentTeacher <- Backend: return <color green>subscriptionStatus: active</color> , \n <color green>cancelRequest.request: true </color>
+    PaymentTeacher -> PaymentTeacher: Show `Cancel request Sent` Button.
+  else else <color green>cancelRequest !== null && cancelRequest.requested === true</color>
+    PaymentStudent -> PaymentStudent: Show `Cancel request Sent` Button, disable click event.
+  else else <color green>when could re-request cancellation again? </color>
+    PaymentStudent -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+    PaymentStudent <- Backend: return <color green>subscriptionStatus: active</color> , \n <color green>cancelRequest.request: true => false</color>
+  end
+
+== reject subscription ==
+ChatTeacher -> ChatTeacher: click `Cancel Cancellation` Button
+ChatTeacher <-> Backend: PATCH subscription data \n <color blue>payment/subscriptions/${subscriptionId}/reject-cancel-request</color>
+PaymentTeacher -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+PaymentTeacher <- Backend: return <color green>subscriptionStatus: active</color> , \n <color green>cancelRequest.request: true => false</color>
+PaymentStudent -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+PaymentStudent <- Backend: return <color green>subscriptionStatus: active</color> , \n <color green>cancelRequest.request: true => false</color>
+PaymentStudent -> PaymentStudent: allow to request again
+
+== approve cancellation ==
+ChatTeacher -> ChatTeacher: click `Approve Cancellation` Button
+ChatTeacher <-> Backend: DELETE subscription data \n <color blue>payment/subscriptions/${subscriptionId}</color>
+PaymentTeacher -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+PaymentTeacher <- Backend: return <color green>subscriptionStatus: active => canceled</color> , \n <color green>cancelRequest.request: true => false</color>
+PaymentStudent -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+PaymentStudent <- Backend: return <color green>subscriptionStatus: active => canceled</color> , \n <color green>cancelRequest.request: true => false</color>
+
+== cancellation expired ==
+ChatTeacher -> ChatTeacher: do nothing
+PaymentTeacher -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+PaymentTeacher <- Backend: return <color green>subscriptionStatus: active</color> , \n <color green>cancelRequest.request: false</color>
+PaymentStudent -> Backend: GET subscription data \n <color blue>v2/payment/subscriptions/{subscriptionId}</color>
+PaymentStudent <- Backend: return <color green>subscriptionStatus: active</color> , \n <color green>cancelRequest.request: false</color>
+PaymentStudent -> PaymentStudent: allow to request again
+
+@enduml

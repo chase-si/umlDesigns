@@ -1,0 +1,21 @@
+@startuml
+title "Sync UserId to Google Analytics"
+
+participant Frontend as FE
+participant "Google Tag Manager" as GTM
+participant "Google Analytics" as GA
+
+== sign up with email ==
+note over FE
+<color blue>POST `/v2/auth/register`</color>
+data: {
+  email: "string",
+  password: "string",
+  source?: "google" || "meta" || "linkedin" || "x" || "no_ads" || ...
+}
+end note
+' FE -> BE: request
+' FE <- BE: return {email, id}
+' FE -> GTag: sync the id to GTag
+
+@enduml

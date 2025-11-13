@@ -1,0 +1,58 @@
+@startuml
+title "Tracking source when sign up with email/google"
+
+participant GoogleTag as GTag
+box "Frontend"
+participant MainWindow as FE
+participant PopupWindow as FE_Popup
+end box
+participant Backend as BE
+
+== sign up with email ==
+note over FE
+<color blue>POST `/v2/auth/register`</color>
+data: {
+  email: "string",
+  password: "string",
+  source?: "google" || "meta" || "linkedin" || "x" || "no_ads" || ...
+}
+end note
+FE -> BE: request
+FE <- BE: return {email, id}
+FE -> GTag: sync the id to GTag
+
+== sign up with google in One Tap ==
+FE -> FE: click login with google account in the one tap popup
+FE -> FE: useScriptTag('https://accounts.google.com/gsi/client') to get token
+note over FE
+<color blue>POST `/v2/auth/google`</color>
+data: {
+  token: "string",
+  source?: "google" || "meta" || "linkedin" || "x" || "no_ads" || ... 
+}
+end note
+FE -> BE: request
+FE <- BE: return {accessToken, isSocialSignup}
+FE -> FE: decode the accessToken
+FE -> GTag: sync the id to GTag
+
+== sign up with google in login-popup(oauth2) ==
+FE -> FE: click `continue with google` button
+FE -> FE: set loop to check cookie flag "provider-auth"
+FE -> FE_Popup: open a new small window as popup, \n with the url: {apiBaseUrl}/auth/google
+note over FE_Popup
+in the popup window:
+load <color blue>GET `{apiBaseUrl}/v2/auth/google`</color>
+params: {
+  source?: "google" || "meta" || "linkedin" || "x" || "no_ads" ... 
+}
+
+/v2/auth/google?source=google || ...
+end note
+FE_Popup -> BE: request
+FE_Popup <- BE: redirection to {frontendBaseUrl}/auth/google?isSocialSignup=true
+BE -> BE: handle BE logic, some redirection or Google API call...
+FE_Popup -> FE_Popup: set cookie "provider-auth" and "isSocialSignup => signup-with-google-account", \n and close window
+FE <- FE_Popup: get the cookie "provider-auth" and "signup-with-google-account"
+FE -> FE: login success;
+@enduml

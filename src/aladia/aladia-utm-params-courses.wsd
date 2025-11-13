@@ -1,0 +1,83 @@
+@startuml
+title "utm params setting in courses"
+legend top right
+  Tips:
+  <color Blue>Blue: Frontend GTM event name; </color>
+  <color Orange>Orange: GA4 event name; </color>
+  ' <color red>Red: Todo; </color>
+end legend
+
+participant LocalStorage as LS
+participant Frontend as FE
+
+participant googleTagManager as GTM
+participant googleAnalytics as GA4
+
+participant adPlatforms as AP
+
+== course related [Global] ==
+  note over FE
+  URL: .../courses/{courseId}?utm_source=...
+  end note
+FE -> FE: visit course page from ad
+activate FE
+FE -> FE: get utm from URL
+FE -> FE: call `setUtmParamsCache` function
+FE -> LS: set utm cache
+deactivate FE
+
+== courses related [Course Page View] ==
+autonumber 1.1
+FE -> GTM: trigger event <color blue>page_view</color> automatically
+GTM -> GA4: send event <color Orange>page_view</color> automatically
+  note over GA4
+  filter in Google Analytics:
+  1. page path contains `/courses/` +
+  2. event_name is <color Orange>page_view</color>
+  end note
+GA4 -> GA4: we could view the analytics data
+
+== courses related [Checkout Button Click] ==
+autonumber 2.1
+  note over FE
+  URL: 
+  1. .../courses/{courseId}?utm_source=..
+  2. .../market?utm_source=..
+  end note
+FE -> FE: click checkout button
+activate FE
+FE -> FE: getUtmParamsCache
+LS -> FE: set utm cache back to URL
+FE -> FE: read courseId from courseStore
+FE -> GTM: trigger event <color blue>open-checkout-popup</color> \n with courseId as event.params.courseId
+deactivate FE
+GTM -> GA4: send event <color Orange>GA4_click_checkout_button</color> \n with courseId as event.params.courseId
+  note over GA4
+  filter in Google Analytics:
+  1. event_name is <color Orange>GA4_click_checkout_button</color>
+  2. path URL contains {courseId} (not all)
+  end note
+GA4 -> GA4: we could view the analytics data
+
+alt "if set as conversion event"
+GTM -> AP: sync data to ad platform, count as conversion
+end
+
+== courses related [Purchase successfully(after the steps above)] ==
+FE -> FE: checkout steps...
+activate FE
+FE -> FE: checkout successfully
+deactivate FE
+FE -> GTM: trigger event <color blue>purchase-success</color> \n with courseId as event.params.courseId
+GTM -> GA4: send event <color Orange>GA4_course_purchase_success</color> \n with courseId as event.params.courseId
+note over GA4
+filter in Google Analytics:
+1. event_name is <color Orange>GA4_course_purchase_success</color>
+2. path URL contains {courseId} (not all)
+end note
+GA4 -> GA4: we could view the analytics data in GA4 dashboard
+
+alt "if set as conversion event"
+GTM -> AP: sync data to ad platform, count as conversion
+end
+@enduml
